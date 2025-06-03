@@ -21,3 +21,10 @@ import Content from '@/components/layout/Content.vue';
     </el-container>
   </div>
 </template>
+
+<style>
+.home {
+  background-color: #fff9ec;
+  height: 100vh;
+}
+</style>
