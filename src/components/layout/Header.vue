@@ -1,10 +1,12 @@
 <template>
     <div class="header">
-        <p>this is home header</p>
+        <Breadcrumb />
     </div>
 </template>
 
 <script setup lang="ts">
+import Breadcrumb from '@/components/common/header/Breadcrumb.vue';
+
 
 </script>
 
