@@ -1,7 +1,6 @@
 <template>
   <div class="content">
-    <xm-editor :extensions="options.extensions" :onChanged="onChanged" :onFocus="onFocus" />
-    <p>this is home content</p>
+    <XmEditor :options="options" />
   </div>
 </template>
 
@@ -36,14 +35,6 @@ const options = {
     HorizontalRule,
     CodeBlock,
   ],
-}
-
-function onChanged({ editor }) {
-  console.log(editor.getJSON())
-}
-
-function onFocus() {
-  console.log('focus')
 }
 </script>
 
