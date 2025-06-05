@@ -1,11 +1,11 @@
 <template>
   <div class="content">
-    <XmEditor :options="options" />
+    <xm-editor :extensions="options.extensions" :onChanged="onChanged" :onFocus="onFocus" />
     <p>this is home content</p>
   </div>
 </template>
 
-<script setup >
+<script setup>
 import XmEditor from 'xm-editor'
 import {
   Heading,
@@ -22,7 +22,7 @@ import {
 } from 'xm-editor'
 import 'xm-editor/xm-editor.css'
 
-const options = {   
+const options = {
   extensions: [
     Heading,
     Bold,
@@ -36,6 +36,14 @@ const options = {
     HorizontalRule,
     CodeBlock,
   ],
+}
+
+function onChanged({ editor }) {
+  console.log(editor.getJSON())
+}
+
+function onFocus() {
+  console.log('focus')
 }
 </script>
 
