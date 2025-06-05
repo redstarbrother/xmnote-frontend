@@ -1,30 +1,36 @@
 <template>
-    <div class="search-area">
-        <input type="text" class="search-input" placeholder="Search...">
-        <button class="search-button">Search</button>
-    </div>
-    <div class="note-area">
-        <p>笔记</p>
-        <div class="note-list">
-            <NoteItem v-for="note in notes" :key="note.id" :item="note" />
+    <div class="sidebar-container">
+        <div class="main-content">
+            <div class="search-area">
+                <el-input v-model="searchContent" style="width: 240px" size="large" placeholder="Please Input"
+                    :suffix-icon="Search" />
+            </div>
+            <div class="note-area">
+                <p>笔记</p>
+                <div class="note-list">
+                    <NoteItem v-for="note in notes" :key="note.id" :item="note" />
+                </div>
+            </div>
+            <div class="blog-area">
+
+            </div>
         </div>
-    </div>
-    <div class="blog-area">
-
-    </div>
-    <div class="sidebar">
-        <p>this is home sidebar</p>
-
+        <div class="user-area">
+            <!-- 用户区域内容 -->
+            <UserArea />
+        </div>
     </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import NoteItem from '@/components/common/sidebar/NodeItem.vue'
+import UserArea from '@/components/common/sidebar/UserArea.vue'
 import { useBreadcrumbStore } from '@/stores/breadcrumbStore'
-
+import { Search } from '@element-plus/icons-vue'
 
 const notes = ref([])
+const searchContent = ref('')
 const breadcrumbStore = useBreadcrumbStore();
 
 onMounted(() => {
@@ -96,7 +102,7 @@ function initNoteList() {
             child: []
         },
         {
-            id: 'L0F5DR8UE21MNBRY432EF2H88PLMK321',
+            id: 'L0F5DR8UE21MNBRY432EF5H88PLMK321',
             title: '灵感随记',
             logo: '📝',
             type: 'note',
@@ -107,4 +113,48 @@ function initNoteList() {
 }
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+.sidebar-container {
+    width: 100%;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .main-content {
+        flex-grow: 1;
+
+        .search-area {
+            margin-bottom: 20px;
+        }
+
+        .note-area {
+            margin-bottom: 20px;
+
+            p {
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+
+            .note-list {
+                // 笔记列表样式
+            }
+        }
+
+        .blog-area {
+            margin-bottom: 20px;
+            // 博客区域样式
+        }
+    }
+
+    .user-area {
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        // 用户区域样式
+    }
+}
+</style>
