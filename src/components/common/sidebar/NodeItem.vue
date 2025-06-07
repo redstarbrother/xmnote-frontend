@@ -1,11 +1,23 @@
 <template>
     <div class="node-item">
-        <div class="item" @click="select">
-            <span>{{ item.logo }}</span>
-            <span class="truncate">{{ item.title }}</span>
-            <span v-if="documentInfo.type === NodeType.FOLDER" >
-                {{ expanded ? '▼' : '▶' }}
-            </span>
+        <div class="item-container" @click="select">
+            <div class="item-info">
+                <span>{{ '　'.repeat(documentInfo.depth || 0) }}{{ item.logo }}</span>
+                <span class="truncate" :class="{ 'file': documentInfo.type === NodeType.FOLDER }">{{ item.title }}</span>
+            </div>
+            <div class="item-option">
+                <span class="option-switch">
+                    <el-icon>
+                        <MoreFilled color="#868684" />
+                    </el-icon>
+                </span>
+                <span v-if="documentInfo.type === NodeType.FOLDER">
+                    <el-icon>
+                        <ArrowDownBold color="#868684" v-if="expanded" />
+                        <ArrowLeftBold color="#868684" v-else />
+                    </el-icon>
+                </span>
+            </div>
         </div>
         <div v-if="expanded">
             <NodeItem v-for="child in item.child" :key="child.id" :item="child" />
@@ -17,6 +29,7 @@
 import { NodeType } from "@/enums/NodeType"
 import { ref, onMounted } from "vue"
 import { useBreadcrumbStore } from '@/stores/breadcrumbStore'
+import { ArrowDownBold, ArrowLeftBold } from '@element-plus/icons-vue'
 
 const props = defineProps({
     item: {
@@ -44,31 +57,75 @@ const select = () => {
 
 onMounted(() => {
     console.log(documentInfo);
-    
+
 })
 </script>
 
 <style scoped lang="scss">
 .node-item {
-    padding-left: 16px;
     margin: 5px 0;
     cursor: pointer;
 
-    .item {
+
+    .item-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         width: 100%;
+        height: 20px;
+        padding: 5px 3px;
         // 避免用户选中文字
         user-select: none;
+        border-radius: 4px;
+        transition: all 0.5s ease;
 
-        :hover {
-            background-color: #f5f5f5;
+        &:hover {
+            background-color: #e8e8e7;
+            transition: all 0.5s ease;
+            .item-option {
+                display: flex;
+            }
+        }
+
+        &:active {
+            background-color: #f0f0ef;
+            .item-option {
+                display: flex;
+            }
+        }
+    }
+
+    .item-option {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+
+        span {
+            padding: 3px;
+            border-radius: 30%;
+            transition: all 0.5s ease;
+            cursor: pointer;
+        }
+
+        .option-switch {
+            &:hover {
+                background-color: #dddddd;
+                border-radius: 4px;
+            }
         }
     }
 
     .truncate {
+        color: #5f5f5b;
         max-width: 160px;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+    }
+
+    .file {
+        color: #3c3c39;
     }
 }
 </style>

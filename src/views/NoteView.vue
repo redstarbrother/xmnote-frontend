@@ -24,7 +24,7 @@ import Content from '@/components/layout/Content.vue';
 
 <style scoped lang="scss">
 .home {
-  background-color: #fff9ec;
+  background-color: #ffffff;
   height: 100vh;
   width: 100vw;
 }

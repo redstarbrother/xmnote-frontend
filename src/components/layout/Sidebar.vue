@@ -6,7 +6,7 @@
                     :suffix-icon="Search" />
             </div>
             <div class="note-area">
-                <p>笔记</p>
+                <p class="categary-title">笔记</p>
                 <div class="note-list">
                     <NoteItem v-for="note in notes" :key="note.id" :item="note" />
                 </div>
@@ -48,6 +48,7 @@ function initNoteList() {
             title: '工作笔记',
             logo: '📂',
             type: 'folder',
+            depth: 0,
             parentId: null,
             child: [
                 {
@@ -55,6 +56,7 @@ function initNoteList() {
                     title: '会议记录',
                     logo: '📝',
                     type: 'note',
+                    depth: 1,
                     parentId: 'J6G4FU0FDS6AJGFR877EJ7F43SCFG123',
                     child: []
                 },
@@ -63,6 +65,7 @@ function initNoteList() {
                     title: '项目计划',
                     logo: '📝',
                     type: 'note',
+                    depth: 1,
                     parentId: 'J6G4FU0FDS6AJGFR877EJ7F43SCFG123',
                     child: []
                 }
@@ -73,6 +76,7 @@ function initNoteList() {
             title: '生活记录',
             logo: '📂',
             type: 'folder',
+            depth: 0,
             parentId: null,
             child: [
                 {
@@ -80,6 +84,7 @@ function initNoteList() {
                     title: '旅行计划',
                     logo: '📝',
                     type: 'note',
+                    depth: 1,
                     parentId: 'C9H2PT1FGS9LKJHY564EW3G89QWER321',
                     child: []
                 },
@@ -88,6 +93,7 @@ function initNoteList() {
                     title: '购物清单',
                     logo: '📝',
                     type: 'note',
+                    depth: 1,
                     parentId: 'C9H2PT1FGS9LKJHY564EW3G89QWER321',
                     child: []
                 }
@@ -98,6 +104,7 @@ function initNoteList() {
             title: '学习笔记',
             logo: '📂',
             type: 'folder',
+            depth: 0,
             parentId: null,
             child: []
         },
@@ -106,6 +113,7 @@ function initNoteList() {
             title: '灵感随记',
             logo: '📝',
             type: 'note',
+            depth: 0,
             parentId: null,
             child: []
         }
@@ -117,9 +125,9 @@ function initNoteList() {
 .sidebar-container {
     width: 100%;
     height: 100vh;
-    padding: 20px;
+    padding: 15px;
     box-sizing: border-box;
-    background-color: #f5f5f5;
+    background-color: #f8f8f7;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -127,6 +135,9 @@ function initNoteList() {
     .main-content {
         flex-grow: 1;
 
+        .categary-title {
+            color: #91918e;
+        }
         .search-area {
             margin-bottom: 20px;
         }

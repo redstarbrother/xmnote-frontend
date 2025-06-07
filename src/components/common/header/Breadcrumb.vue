@@ -1,7 +1,7 @@
 <template>
     <div class="breadcrumb-container">
         <el-breadcrumb separator="/">
-            <el-breadcrumb-item >首页</el-breadcrumb-item>
+            <el-breadcrumb-item >笔记</el-breadcrumb-item>
             <el-breadcrumb-item v-for="item in breadcrumbPath" :key="item.id">
                 {{ item.title }}
             </el-breadcrumb-item>

@@ -1,5 +1,5 @@
 <template>
-    <div class="header">
+    <div class="header-container">
         <Breadcrumb />
     </div>
 </template>
