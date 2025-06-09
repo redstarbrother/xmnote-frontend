@@ -2,7 +2,7 @@
     <div class="sidebar-container">
         <div class="main-content">
             <div class="search-area">
-                <el-input v-model="searchContent" style="width: 240px" size="large" placeholder="Please Input"
+                <el-input v-model="searchContent" size="large" placeholder="Please Input"
                     :suffix-icon="Search" />
             </div>
             <div class="note-area">

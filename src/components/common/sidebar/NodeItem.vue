@@ -83,28 +83,29 @@ onMounted(() => {
             background-color: #e8e8e7;
             transition: all 0.5s ease;
             .item-option {
-                display: flex;
+                opacity: 1;         
             }
         }
 
         &:active {
             background-color: #f0f0ef;
             .item-option {
-                display: flex;
+                opacity: 1;        
             }
         }
     }
 
     .item-option {
-        display: none;
+        display: flex;
         align-items: center;
         justify-content: center;
         gap: 5px;
+        transition: all 0.5s ease;  
+        opacity: 0;                
 
         span {
             padding: 3px;
             border-radius: 30%;
-            transition: all 0.5s ease;
             cursor: pointer;
         }
 
