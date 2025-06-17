@@ -26,6 +26,7 @@ import Content from '@/components/layout/Content.vue';
 .home {
   background-color: #ffffff;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
+  overflow: auto;
 }
 </style>

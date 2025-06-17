@@ -47,5 +47,6 @@ const breadcrumbPath = computed(() => {
 <style lang="scss" scoped>
 .breadcrumb-container {
     padding: 16px;
+    height: 100%;
 }
 </style>
