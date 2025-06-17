@@ -1,5 +1,5 @@
 <template>
-  <div class="content">
+  <div class="content-container">
     <div class="content-title">
       <input class="content-title-input" @keyup.enter="handleEnterTitle" />
     </div>
@@ -11,6 +11,9 @@
         :showBorder="false"
         :height="'100%'"
       />
+    </div>
+    <div class="content-footer">
+      <Footer />
     </div>
   </div>
 </template>
@@ -56,7 +59,7 @@ const handleEnterTitle = () => {
 </script>
 
 <style scoped lang="scss">
-.content {
+.content-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -69,7 +72,7 @@ const handleEnterTitle = () => {
 
     .content-title-input {
       width: 100%;
-      font-size: 50px;
+      font-size: 40px;
       font-weight: 600;
       height: 60px;
       border: none;
