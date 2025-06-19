@@ -38,10 +38,10 @@ const bookmarkCount = ref(18);
   flex-direction: column;
   width: 100%;
   height: 100%;
+  padding: 5px;
   .user-info-area {
     display: flex;
     align-items: center;
-    padding: 5px;
 
     .user-info-message {
       height: 100%;
@@ -75,7 +75,6 @@ const bookmarkCount = ref(18);
   .options-area {
     display: flex;
     align-items: center;
-    padding: 5px;
     .option-btn {
       font-size: 14px;
       margin-right: 10px;

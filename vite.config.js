@@ -25,4 +25,17 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:9527', // 后端服务器地址
+        changeOrigin: true,
+        rewrite: (path) => {
+          const newPath = path.replace(/^\/api/, '')
+          console.log(`Rewriting ${path} to ${newPath}`); // 查看终端输出
+          return newPath;
+        }
+      },
+    }
+  }
 })
