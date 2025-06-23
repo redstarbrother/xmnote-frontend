@@ -61,7 +61,7 @@ const select = () => {
 };
 
 onMounted(() => {
-  console.log(documentInfo);
+  // console.log(documentInfo);
 });
 </script>
 
