@@ -9,10 +9,20 @@
           :suffix-icon="Search"
         />
       </div>
-      <div class="domain-area" v-for="domain in domains" :key="domain.domainName">
-        <p class="category-title">{{domain.domainName}}</p>
-        <div class="note-list">
-          <NoteItem v-for="document in domain.documents" :key="document.id" :item="document" />
+      <div class="domain-area">
+        <div
+          class="domain-item"
+          v-for="domain in domains"
+          :key="domain.domainName"
+        >
+          <p class="category-title">{{ domain.domainName }}</p>
+          <div class="note-list">
+            <NoteItem
+              v-for="document in domain.documents"
+              :key="document.id"
+              :item="document"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -32,7 +42,7 @@ import { Search } from "@element-plus/icons-vue";
 import { getDirInfo } from "@/api/doc";
 
 const notes = ref([]);
-const domains = ref([])
+const domains = ref([]);
 const searchContent = ref("");
 const breadcrumbStore = useBreadcrumbStore();
 
@@ -61,7 +71,6 @@ let format = [
 
 // 笔记目录列表初始化
 async function initNoteList() {
-
   // 随机生成一些笔记
   notes.value = [
     {
@@ -140,8 +149,8 @@ async function initNoteList() {
     },
   ];
 
-   let response = await getDirInfo({userId: 2})
-   domains.value = response.data.domainFolderTreeList;
+  let response = await getDirInfo({ userId: 2 });
+  domains.value = response.data.domainFolderTreeList;
 }
 </script>
 
@@ -164,6 +173,32 @@ async function initNoteList() {
     }
     .search-area {
       margin-bottom: 20px;
+    }
+
+    .domain-area {
+      max-height: 80vh;
+      overflow: auto;
+      scrollbar-width: none; // Firefox 隐藏滚动条
+      -ms-overflow-style: none; // IE/Edge 隐藏滚动条
+
+      &::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+        background: transparent;
+        opacity: 0; // 初始隐藏
+        transition: opacity 0.3s;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 4px;
+      }
+
+      &:hover {
+        &::-webkit-scrollbar {
+          opacity: 1; // 鼠标悬停时显示滚动条
+        }
+      }
     }
 
     .note-area {

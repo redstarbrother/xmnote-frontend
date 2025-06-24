@@ -15,8 +15,8 @@
             <span class="count-info">🔖 书签：{{ bookmarkCount }}</span>
         </div> -->
     <div class="options-area">
-      <el-button type="text" class="option-btn">📊 数据统计</el-button>
-      <el-button type="text" class="option-btn">⚙️ 设置</el-button>
+      <el-button link type="primary" class="option-btn">📊 数据统计</el-button>
+      <el-button link type="primary" class="option-btn">⚙️ 设置</el-button>
     </div>
   </div>
 </template>
@@ -75,6 +75,7 @@ const bookmarkCount = ref(18);
   .options-area {
     display: flex;
     align-items: center;
+    margin-top: 5px;
     .option-btn {
       font-size: 14px;
       margin-right: 10px;

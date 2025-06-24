@@ -1,9 +1,11 @@
 <template>
   <div class="node-item">
-    <div class="item-container" @click="select">
+    <div class="item-container">
       <div class="item-info">
-        <span class="item-info-logo"
-          >{{ "　".repeat(documentInfo.depth || 0) }}{{ item.logo }}</span
+        <span
+          class="item-info-logo"
+          :style="{ paddingLeft: `${(documentInfo.depth || 0) * 16}px` }"
+          >{{ item.logo }}</span
         >
         <span
           class="truncate"
@@ -12,12 +14,16 @@
         >
       </div>
       <div class="item-option">
-        <span class="option-switch">
+        <span class="option-more" @click="showMenu($event, item.id)">
           <el-icon>
             <MoreFilled color="#868684" />
           </el-icon>
         </span>
-        <span v-if="documentInfo.type === NodeType.FOLDER">
+        <span
+          class="option-switch"
+          @click="expandDir"
+          v-if="documentInfo.type === NodeType.FOLDER"
+        >
           <el-icon>
             <ArrowDownBold color="#868684" v-if="expanded" />
             <ArrowLeftBold color="#868684" v-else />
@@ -28,6 +34,19 @@
     <div v-if="expanded">
       <NodeItem v-for="child in item.child" :key="child.id" :item="child" />
     </div>
+    <!-- 气泡菜单 -->
+    <el-popover
+      v-model:visible="menuVisible"
+      :reference="menuReference"
+      placement="bottom-start"
+      trigger="manual"
+      @hide="menuVisible = false"
+    >
+      <div class="menu-content">
+        <el-button size="small" type="text" @click="onRename">重命名</el-button>
+        <el-button size="small" type="text" @click="onDelete">删除</el-button>
+      </div>
+    </el-popover>
   </div>
 </template>
 
@@ -47,18 +66,41 @@ const props = defineProps({
 // 展开状态
 const expanded = ref(false);
 const documentInfo = ref(props.item);
+// 气泡菜单是否可见
+const menuVisible = ref(false)
+// 绑定气泡菜单的位置元素
+const menuReference = ref(null)
+const currentId = ref(null)
 // 面包屑strore
 const breadcrumbStore = useBreadcrumbStore();
 // 选中节点
-const select = () => {
+const expandDir = () => {
   if (documentInfo.value.type === NodeType.FOLDER) {
     expanded.value = !expanded.value;
-  } else if (documentInfo.value.type === NodeType.NOTE) {
-    // 打开笔记
-    console.log("打开笔记");
-    breadcrumbStore.setCurrentNoteId(documentInfo.value.id);
-  }
+  } 
+  // else if (documentInfo.value.type === NodeType.NOTE) {
+  //   // 打开笔记
+  //   console.log("打开笔记");
+  //   breadcrumbStore.setCurrentNoteId(documentInfo.value.id);
+  // }
 };
+
+// 显示气泡菜单
+function showMenu(event, id) {
+  currentId.value = id
+  menuReference.value = event.currentTarget // 绑定触发按钮元素
+  menuVisible.value = true
+}
+
+function onRename() {
+  alert('重命名: ' + currentId.value)
+  menuVisible.value = false
+}
+
+function onDelete() {
+  alert('删除: ' + currentId.value)
+  menuVisible.value = false
+}
 
 onMounted(() => {
   // console.log(documentInfo);
@@ -87,10 +129,10 @@ onMounted(() => {
       align-items: center;
       .item-info-logo {
         display: flex;
-        align-items: center; 
-        font-size: 16px; 
+        align-items: center;
+        font-size: 16px;
         line-height: 1;
-        margin-right: 5px; 
+        margin-right: 5px;
         transform: translateY(-2px);
       }
 
@@ -122,18 +164,16 @@ onMounted(() => {
   .item-option {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 5px;
     transition: all 0.5s ease;
     opacity: 0;
+    padding-right: 5px;
 
     span {
       padding: 3px;
       border-radius: 30%;
       cursor: pointer;
-    }
-
-    .option-switch {
       &:hover {
         background-color: #dddddd;
         border-radius: 4px;
