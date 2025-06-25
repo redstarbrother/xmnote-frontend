@@ -1,7 +1,8 @@
 <template>
   <div class="content-container">
     <div class="content-title">
-      <input class="content-title-input" @keyup.enter="handleEnterTitle" />
+      <input class="content-title-input" placeholder="请输入标题" @keyup.enter="handleEnterTitle" />
+
     </div>
     <div class="content-editor">
       <XmEditor
@@ -77,6 +78,10 @@ const handleEnterTitle = () => {
       height: 60px;
       border: none;
       outline: none;
+
+      &::placeholder {
+        color: #bcbcb8;
+      }
     }
   }
 

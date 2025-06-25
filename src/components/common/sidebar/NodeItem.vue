@@ -1,6 +1,6 @@
 <template>
   <div class="node-item">
-    <div class="item-container">
+    <div class="item-container" @click="expandDir">
       <div class="item-info">
         <span
           class="item-info-logo"
@@ -14,14 +14,13 @@
         >
       </div>
       <div class="item-option">
-        <span class="option-more" @click="showMenu($event, item.id)">
+        <span class="option-more" @click="showPopoverMenu($event, item.id)">
           <el-icon>
             <MoreFilled color="#868684" />
           </el-icon>
         </span>
         <span
           class="option-switch"
-          @click="expandDir"
           v-if="documentInfo.type === NodeType.FOLDER"
         >
           <el-icon>
@@ -34,25 +33,28 @@
     <div v-if="expanded">
       <NodeItem v-for="child in item.child" :key="child.id" :item="child" />
     </div>
-    <!-- 气泡菜单 -->
-    <el-popover
-      v-model:visible="menuVisible"
-      :reference="menuReference"
-      placement="bottom-start"
-      trigger="manual"
-      @hide="menuVisible = false"
+    <div
+      v-if="popoverMenuVisible"
+      class="popover-menu"
+      :style="{ top: `${popoverMenuPosition.top}px`, left: `${popoverMenuPosition.left}px` }"
+      ref="popoverMenuRef"
     >
-      <div class="menu-content">
-        <el-button size="small" type="text" @click="onRename">重命名</el-button>
-        <el-button size="small" type="text" @click="onDelete">删除</el-button>
+      <div class="popover-menu-item" @click="onPopoverSelect('view')">
+        👁️ View
       </div>
-    </el-popover>
+      <div class="popover-menu-item" @click="onPopoverSelect('save')">
+        ⬇️ Save
+      </div>
+      <div class="popover-menu-item" @click="onPopoverSelect('apply')">
+        🟦 Apply
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { NodeType } from "@/enums/NodeType";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
 import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
 import { ArrowDownBold, ArrowLeftBold } from "@element-plus/icons-vue";
 
@@ -67,17 +69,22 @@ const props = defineProps({
 const expanded = ref(false);
 const documentInfo = ref(props.item);
 // 气泡菜单是否可见
-const menuVisible = ref(false)
+const popoverMenuVisible = ref(false);
 // 绑定气泡菜单的位置元素
-const menuReference = ref(null)
-const currentId = ref(null)
+const popoverMenuPosition = ref({ top: 0, left: 0 });
+const popoverMenuRef = ref(null);
+const triggerBtn = ref(null); // 用于绑定“...”按钮元素
 // 面包屑strore
 const breadcrumbStore = useBreadcrumbStore();
 // 选中节点
-const expandDir = () => {
+const expandDir = (event) => {
+  // 如果点击的是 .option-more 或其子元素，则不触发展开
+  if (event.target.closest(".option-more")) {
+    return;
+  }
   if (documentInfo.value.type === NodeType.FOLDER) {
     expanded.value = !expanded.value;
-  } 
+  }
   // else if (documentInfo.value.type === NodeType.NOTE) {
   //   // 打开笔记
   //   console.log("打开笔记");
@@ -85,25 +92,53 @@ const expandDir = () => {
   // }
 };
 
+let handleClickOutside = undefined;
 // 显示气泡菜单
-function showMenu(event, id) {
-  currentId.value = id
-  menuReference.value = event.currentTarget // 绑定触发按钮元素
-  menuVisible.value = true
-}
+const showPopoverMenu = (event) => {
+  event.stopPropagation();
+  const rect = event.currentTarget.getBoundingClientRect();
+  popoverMenuPosition.value = {
+    top: rect.bottom + 6 + window.scrollY,
+    left: rect.left + window.scrollX,
+  };
+  popoverMenuVisible.value = true;
 
-function onRename() {
-  alert('重命名: ' + currentId.value)
-  menuVisible.value = false
-}
+  // 点击外部时关闭菜单
+  setTimeout(() => {
+  if (handleClickOutside) {
+    document.removeEventListener("click", handleClickOutside);
+  }
 
-function onDelete() {
-  alert('删除: ' + currentId.value)
-  menuVisible.value = false
-}
+  handleClickOutside = (e) => {
+    if (
+      popoverMenuRef.value &&
+      !popoverMenuRef.value.contains(e.target) &&
+      !event.currentTarget.contains(e.target)
+    ) {
+      popoverMenuVisible.value = false;
+      document.removeEventListener("click", handleClickOutside);
+      handleClickOutside = undefined;
+    }
+  };
+
+  document.addEventListener("click", handleClickOutside);
+}, 0);
+};
+
+const onPopoverSelect = (action) => {
+  console.log("Selected:", action);
+  popoverMenuVisible.value = false;
+};
 
 onMounted(() => {
   // console.log(documentInfo);
+});
+
+// 清理：组件卸载时移除监听器，防止内存泄漏
+onBeforeUnmount(() => {
+  if (handleClickOutside) {
+    document.removeEventListener("click", handleClickOutside);
+  }
 });
 </script>
 
@@ -184,5 +219,31 @@ onMounted(() => {
   .file {
     color: #3c3c39;
   }
+
+  .popover-menu {
+  position: absolute;
+  width: 120px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  padding: 8px 0;
+  transition: all 0.2s ease;
+}
+
+.popover-menu-item {
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #232321;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.popover-menu-item:hover {
+  background-color: #f5f5f5;
+}
 }
 </style>
