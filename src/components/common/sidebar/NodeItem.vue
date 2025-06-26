@@ -29,25 +29,28 @@
           </el-icon>
         </span>
       </div>
+      <div
+        v-if="popoverMenuVisible"
+        class="popover-menu"
+        ref="popoverMenuRef"
+        :style="{
+          top: `${popoverMenuPosition.top}px`,
+          left: `${popoverMenuPosition.left}px`,
+        }"
+      >
+        <div class="popover-menu-item" @click="onPopoverSelect($event, 'view')">
+          👁️ View
+        </div>
+        <div class="popover-menu-item" @click="onPopoverSelect($event, 'save')">
+          ⬇️ Save
+        </div>
+        <div class="popover-menu-item" @click="onPopoverSelect($event, 'apply')">
+          🟦 Apply
+        </div>
+      </div>
     </div>
     <div v-if="expanded">
       <NodeItem v-for="child in item.child" :key="child.id" :item="child" />
-    </div>
-    <div
-      v-if="popoverMenuVisible"
-      class="popover-menu"
-      :style="{ top: `${popoverMenuPosition.top}px`, left: `${popoverMenuPosition.left}px` }"
-      ref="popoverMenuRef"
-    >
-      <div class="popover-menu-item" @click="onPopoverSelect('view')">
-        👁️ View
-      </div>
-      <div class="popover-menu-item" @click="onPopoverSelect('save')">
-        ⬇️ Save
-      </div>
-      <div class="popover-menu-item" @click="onPopoverSelect('apply')">
-        🟦 Apply
-      </div>
     </div>
   </div>
 </template>
@@ -57,6 +60,7 @@ import { NodeType } from "@/enums/NodeType";
 import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
 import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
 import { ArrowDownBold, ArrowLeftBold } from "@element-plus/icons-vue";
+import { onClickOutside } from "@vueuse/core";
 
 const props = defineProps({
   item: {
@@ -92,8 +96,6 @@ const expandDir = (event) => {
   // }
 };
 
-let handleClickOutside = undefined;
-// 显示气泡菜单
 const showPopoverMenu = (event) => {
   event.stopPropagation();
   const rect = event.currentTarget.getBoundingClientRect();
@@ -102,44 +104,19 @@ const showPopoverMenu = (event) => {
     left: rect.left + window.scrollX,
   };
   popoverMenuVisible.value = true;
-
-  // 点击外部时关闭菜单
-  setTimeout(() => {
-  if (handleClickOutside) {
-    document.removeEventListener("click", handleClickOutside);
-  }
-
-  handleClickOutside = (e) => {
-    if (
-      popoverMenuRef.value &&
-      !popoverMenuRef.value.contains(e.target) &&
-      !event.currentTarget.contains(e.target)
-    ) {
-      popoverMenuVisible.value = false;
-      document.removeEventListener("click", handleClickOutside);
-      handleClickOutside = undefined;
-    }
-  };
-
-  document.addEventListener("click", handleClickOutside);
-}, 0);
 };
 
-const onPopoverSelect = (action) => {
+// 使用 VueUse 监听点击外部关闭菜单
+onClickOutside(popoverMenuRef, () => {
+  popoverMenuVisible.value = false;
+});
+
+const onPopoverSelect = (event, action) => {
+  event.stopPropagation();
   console.log("Selected:", action);
   popoverMenuVisible.value = false;
 };
 
-onMounted(() => {
-  // console.log(documentInfo);
-});
-
-// 清理：组件卸载时移除监听器，防止内存泄漏
-onBeforeUnmount(() => {
-  if (handleClickOutside) {
-    document.removeEventListener("click", handleClickOutside);
-  }
-});
 </script>
 
 <style scoped lang="scss">
@@ -221,29 +198,29 @@ onBeforeUnmount(() => {
   }
 
   .popover-menu {
-  position: absolute;
-  width: 120px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
-  z-index: 999;
-  padding: 8px 0;
-  transition: all 0.2s ease;
-}
+    position: absolute;
+    width: 120px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    padding: 8px 0;
+    transition: all 0.2s ease;
+  }
 
-.popover-menu-item {
-  padding: 8px 16px;
-  font-size: 14px;
-  color: #232321;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
+  .popover-menu-item {
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #232321;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
 
-.popover-menu-item:hover {
-  background-color: #f5f5f5;
-}
+  .popover-menu-item:hover {
+    background-color: #f5f5f5;
+  }
 }
 </style>
