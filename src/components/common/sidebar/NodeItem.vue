@@ -14,7 +14,7 @@
         >
       </div>
       <div class="item-option">
-        <span class="option-more" @click="showPopoverMenu($event, item.id)">
+        <span class="option-more" @click="showPopoverMenu($event)">
           <el-icon>
             <MoreFilled color="#868684" />
           </el-icon>
@@ -38,14 +38,14 @@
           left: `${popoverMenuPosition.left}px`,
         }"
       >
-        <div class="popover-menu-item" @click="onPopoverSelect($event, 'view')">
-          👁️ View
+        <div class="popover-menu-item" @click="onPopoverSelect($event, 'addFolder')">
+          <el-icon><Folder /></el-icon> 新增目录
         </div>
-        <div class="popover-menu-item" @click="onPopoverSelect($event, 'save')">
-          ⬇️ Save
+        <div class="popover-menu-item" @click="onPopoverSelect($event, 'addDoc')">
+          <el-icon><Document /></el-icon> 新增文档
         </div>
-        <div class="popover-menu-item" @click="onPopoverSelect($event, 'apply')">
-          🟦 Apply
+        <div class="popover-menu-item" @click="onPopoverSelect($event, 'rename')">
+          <el-icon><EditPen /></el-icon> 重命名
         </div>
       </div>
     </div>
@@ -80,6 +80,10 @@ const popoverMenuRef = ref(null);
 const triggerBtn = ref(null); // 用于绑定“...”按钮元素
 // 面包屑strore
 const breadcrumbStore = useBreadcrumbStore();
+// 重命名状态
+const isRenaming = ref(false);
+const editTitle = ref(documentInfo.value.title);
+const inputRef = ref(null);
 // 选中节点
 const expandDir = (event) => {
   // 如果点击的是 .option-more 或其子元素，则不触发展开
@@ -98,6 +102,10 @@ const expandDir = (event) => {
 
 const showPopoverMenu = (event) => {
   event.stopPropagation();
+  // if(popoverMenuVisible.value == true) {
+  //   popoverMenuVisible.value = false;
+  //   return;
+  // }
   const rect = event.currentTarget.getBoundingClientRect();
   popoverMenuPosition.value = {
     top: rect.bottom + 6 + window.scrollY,
@@ -114,7 +122,33 @@ onClickOutside(popoverMenuRef, () => {
 const onPopoverSelect = (event, action) => {
   event.stopPropagation();
   console.log("Selected:", action);
+  if (action === 'rename') {
+    console.log('rename+++');
+    
+    onRename();
+  }
   popoverMenuVisible.value = false;
+};
+
+const onRename = () => {
+  editTitle.value = documentInfo.value.title;
+  isRenaming.value = true;
+  nextTick(() => {
+    inputRef.value?.focus();
+  });
+};
+
+const confirmRename = () => {
+  if (editTitle.value.trim() !== '') {
+    documentInfo.value.title = editTitle.value.trim();
+    // 如果需要调用 API 同步保存，建议在这里加
+  }
+  isRenaming.value = false;
+};
+
+const cancelRename = () => {
+  isRenaming.value = false;
+  editTitle.value = documentInfo.value.title;
 };
 
 </script>
