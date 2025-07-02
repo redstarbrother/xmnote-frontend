@@ -8,10 +8,21 @@
           >{{ item.logo }}</span
         >
         <span
+          v-if="!isRenaming"
           class="truncate"
           :class="{ file: documentInfo.type === NodeType.FOLDER }"
-          >{{ item.title }}</span
         >
+          {{ documentInfo.title }}
+        </span>
+        <input
+          v-else
+          ref="inputRef"
+          v-model="editTitle"
+          class="rename-input"
+          @keydown.enter="confirmRename"
+          @blur="confirmRename"
+          @keydown.esc="cancelRename"
+        />
       </div>
       <div class="item-option">
         <span class="option-more" @click="showPopoverMenu($event)">
@@ -38,13 +49,24 @@
           left: `${popoverMenuPosition.left}px`,
         }"
       >
-        <div class="popover-menu-item" @click="onPopoverSelect($event, 'addFolder')">
+        <div
+          class="popover-menu-item"
+          v-if="documentInfo.type === NodeType.FOLDER"
+          @click="onPopoverSelect($event, 'addFolder')"
+        >
           <el-icon><Folder /></el-icon> 新增目录
         </div>
-        <div class="popover-menu-item" @click="onPopoverSelect($event, 'addDoc')">
+        <div
+          class="popover-menu-item"
+          v-if="documentInfo.type === NodeType.FOLDER"
+          @click="onPopoverSelect($event, 'addDoc')"
+        >
           <el-icon><Document /></el-icon> 新增文档
         </div>
-        <div class="popover-menu-item" @click="onPopoverSelect($event, 'rename')">
+        <div
+          class="popover-menu-item"
+          @click="onPopoverSelect($event, 'rename')"
+        >
           <el-icon><EditPen /></el-icon> 重命名
         </div>
       </div>
@@ -122,14 +144,17 @@ onClickOutside(popoverMenuRef, () => {
 const onPopoverSelect = (event, action) => {
   event.stopPropagation();
   console.log("Selected:", action);
-  if (action === 'rename') {
-    console.log('rename+++');
-    
+  if (action === "rename") {
     onRename();
+  }else if(action === "addFolder") {
+    addTemporaryNode(NodeType.FOLDER);
+  }else if(action === "addDoc") {
+    addTemporaryNode(NodeType.NOTE);
   }
   popoverMenuVisible.value = false;
 };
 
+// 重命名
 const onRename = () => {
   editTitle.value = documentInfo.value.title;
   isRenaming.value = true;
@@ -139,9 +164,18 @@ const onRename = () => {
 };
 
 const confirmRename = () => {
-  if (editTitle.value.trim() !== '') {
+
+  if (editTitle.value.trim() !== "") {
     documentInfo.value.title = editTitle.value.trim();
     // 如果需要调用 API 同步保存，建议在这里加
+    if(documentInfo.value.isTemp && documentInfo.value.isTemp == true) {
+      // 新增node
+      saveNode();
+      documentInfo.value.isTemp = false;
+    }else {
+      // 更新node
+      updateNode();
+    }
   }
   isRenaming.value = false;
 };
@@ -150,6 +184,74 @@ const cancelRename = () => {
   isRenaming.value = false;
   editTitle.value = documentInfo.value.title;
 };
+
+// 新建目录/文档
+const addTemporaryNode  = (type) => {
+  let newNode = undefined;
+  if (!Array.isArray(documentInfo.value.child)) {
+    documentInfo.value.child = [];
+  }
+  console.log("documentInfo.type === NodeType.FOLDER : ",documentInfo.value.type, NodeType.FOLDER, documentInfo.value.type === NodeType.FOLDER)
+  if(type === NodeType.FOLDER) {
+    newNode = addFolderNode();
+  }else {
+    newNode = addNoteNode();
+  }
+  if(newNode) {
+    console.log(newNode);
+    
+    documentInfo.value.child.push(newNode);
+    expanded.value = true;
+  }
+};
+
+const addFolderNode  = () => {
+  console.log("新建目录");
+  const newItem = {
+    id: `tmp_${Date.now()}`,
+    title: '新建文件夹',
+    type: NodeType.FOLDER,
+    logo: "📂",
+    depth: documentInfo.value.depth + 1,
+    parentId: documentInfo.value.id,
+    child: [],
+    isTemp: true, // 用于标记是否为临时项    
+  };
+  return newItem;
+};
+
+const addNoteNode  = () => {
+  console.log("新建文档");
+  const newItem = {
+    id: `tmp_${Date.now()}`,
+    title: '新建文档',
+    type: NodeType.NOTE,
+    logo: "📝",
+    depth: documentInfo.value.depth + 1,
+    parentId: documentInfo.value.id,
+    child: [],
+    isTemp: true, // 用于标记是否为临时项    
+  };
+  return newItem;
+};
+
+onMounted(() => {
+  console.log("documentInfo.value : ",documentInfo.value);
+  // 如果是临时项，则说明为新增node
+  if(documentInfo.value.isTemp) {
+    onRename();
+  }
+});
+
+const saveNode = async () => {
+  // todo 新增node
+  // documentInfo.value.isTemp = false;
+}
+
+const updateNode = async () => {
+  // todo 更新node
+  // documentInfo.value.isTemp = false;
+}
 
 </script>
 
@@ -188,6 +290,16 @@ const cancelRename = () => {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+      }
+
+      .rename-input {
+        font-size: 16px;
+        line-height: 1;
+        margin-right: 5px;
+        border: 1px solid #e4e2e2;
+        border-radius: 4px;
+        width: 100%;
+        color: #5f5f5b;
       }
     }
 
