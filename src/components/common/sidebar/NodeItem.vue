@@ -82,7 +82,9 @@ import { NodeType } from "@/enums/NodeType";
 import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
 import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
 import { ArrowDownBold, ArrowLeftBold } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
 import { onClickOutside } from "@vueuse/core";
+import { createFolder, createDoc } from "@/api/doc";
 
 const props = defineProps({
   item: {
@@ -146,9 +148,9 @@ const onPopoverSelect = (event, action) => {
   console.log("Selected:", action);
   if (action === "rename") {
     onRename();
-  }else if(action === "addFolder") {
+  } else if (action === "addFolder") {
     addTemporaryNode(NodeType.FOLDER);
-  }else if(action === "addDoc") {
+  } else if (action === "addDoc") {
     addTemporaryNode(NodeType.NOTE);
   }
   popoverMenuVisible.value = false;
@@ -164,15 +166,14 @@ const onRename = () => {
 };
 
 const confirmRename = () => {
-
   if (editTitle.value.trim() !== "") {
     documentInfo.value.title = editTitle.value.trim();
     // 如果需要调用 API 同步保存，建议在这里加
-    if(documentInfo.value.isTemp && documentInfo.value.isTemp == true) {
+    if (documentInfo.value.isTemp && documentInfo.value.isTemp == true) {
       // 新增node
       saveNode();
       documentInfo.value.isTemp = false;
-    }else {
+    } else {
       // 更新node
       updateNode();
     }
@@ -186,73 +187,104 @@ const cancelRename = () => {
 };
 
 // 新建目录/文档
-const addTemporaryNode  = (type) => {
+const addTemporaryNode = (type) => {
   let newNode = undefined;
   if (!Array.isArray(documentInfo.value.child)) {
     documentInfo.value.child = [];
   }
-  console.log("documentInfo.type === NodeType.FOLDER : ",documentInfo.value.type, NodeType.FOLDER, documentInfo.value.type === NodeType.FOLDER)
-  if(type === NodeType.FOLDER) {
+  console.log(
+    "documentInfo.type === NodeType.FOLDER : ",
+    documentInfo.value.type,
+    NodeType.FOLDER,
+    documentInfo.value.type === NodeType.FOLDER
+  );
+  if (type === NodeType.FOLDER) {
     newNode = addFolderNode();
-  }else {
+  } else {
     newNode = addNoteNode();
   }
-  if(newNode) {
+  if (newNode) {
     console.log(newNode);
-    
+
     documentInfo.value.child.push(newNode);
     expanded.value = true;
   }
 };
 
-const addFolderNode  = () => {
+const addFolderNode = () => {
   console.log("新建目录");
   const newItem = {
     id: `tmp_${Date.now()}`,
-    title: '新建文件夹',
+    title: "新建文件夹",
     type: NodeType.FOLDER,
     logo: "📂",
     depth: documentInfo.value.depth + 1,
     parentId: documentInfo.value.id,
+    domainId: documentInfo.value.domainId,
     child: [],
-    isTemp: true, // 用于标记是否为临时项    
+    isTemp: true, // 用于标记是否为临时项
   };
   return newItem;
 };
 
-const addNoteNode  = () => {
+const addNoteNode = () => {
   console.log("新建文档");
   const newItem = {
     id: `tmp_${Date.now()}`,
-    title: '新建文档',
+    title: "新建文档",
     type: NodeType.NOTE,
     logo: "📝",
     depth: documentInfo.value.depth + 1,
     parentId: documentInfo.value.id,
+    domainId: documentInfo.value.domainId,
     child: [],
-    isTemp: true, // 用于标记是否为临时项    
+    isTemp: true, // 用于标记是否为临时项
   };
   return newItem;
 };
 
 onMounted(() => {
-  console.log("documentInfo.value : ",documentInfo.value);
   // 如果是临时项，则说明为新增node
-  if(documentInfo.value.isTemp) {
+  if (documentInfo.value.isTemp) {
     onRename();
   }
 });
 
 const saveNode = async () => {
-  // todo 新增node
-  // documentInfo.value.isTemp = false;
-}
+  // 新增node
+  if (documentInfo.value.type === NodeType.FOLDER) {
+    const response = await createFolder({
+      title: documentInfo.value.title,
+      parentId: documentInfo.value.parentId,
+      domainId: documentInfo.value.domainId,
+      logo: documentInfo.value.logo,
+    });
+    if (response.code === 200) {
+      ElMessage({
+        message: "新建目录成功",
+        type: "success",
+      });
+      documentInfo.value.id = response.data.id;
+    } else {
+      ElMessage({
+        message: "新建目录失败",
+        type: "error",
+      });
+    }
+  } else {
+    await createDoc({
+      title: documentInfo.value.title,
+      parentId: documentInfo.value.parentId,
+      domainId: documentInfo.value.domainId,
+      logo: documentInfo.value.logo,
+    });
+  }
+};
 
 const updateNode = async () => {
   // todo 更新node
   // documentInfo.value.isTemp = false;
-}
-
+};
 </script>
 
 <style scoped lang="scss">

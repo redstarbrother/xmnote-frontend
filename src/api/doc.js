@@ -11,6 +11,50 @@ export const getDirInfo = (params) => {
     });
 };
 
+// 创建目录
+export const createFolder = (params) => {
+    return request({
+        url: '/folder/createFolder',
+        method: 'post',
+        params: {
+            ...params
+        }
+    });
+};
+
+// 更新目录
+export const updateFolder = (params) => {
+    return request({
+        url: '/folder/updateFolder',
+        method: 'post',
+        params: {
+            ...params
+        }
+    });
+};
+
+// 创建文档
+export const createDoc = (params) => {
+    return request({
+        url: '/doc/createDoc',
+        method: 'post',
+        params: {
+            ...params
+        }
+    });
+};
+
+// 更新文档
+export const updateDoc = (params) => {
+    return request({
+        url: '/doc/updateDoc',
+        method: 'post',
+        params: {
+            ...params
+        }
+    });
+};
+
 // 获取用户详情
 export const getUserInfoById = (userId) => {
     return request({
