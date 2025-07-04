@@ -150,7 +150,10 @@ async function initNoteList() {
   ];
 
   let response = await getDirInfo({ userId: 2 });
+  
   domains.value = response.data.domainFolderTreeList;
+  console.log("domains.value", domains.value);
+
 }
 </script>
 

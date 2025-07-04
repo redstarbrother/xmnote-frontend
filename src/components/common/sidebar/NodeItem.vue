@@ -84,7 +84,7 @@ import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
 import { ArrowDownBold, ArrowLeftBold } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { onClickOutside } from "@vueuse/core";
-import { createFolder, createDoc } from "@/api/doc";
+import { createFolder, createDocument } from "@/api/doc";
 
 const props = defineProps({
   item: {
@@ -252,33 +252,37 @@ onMounted(() => {
 
 const saveNode = async () => {
   // 新增node
+  let response = undefined;
+  const successMsg = documentInfo.value.type === NodeType.FOLDER ? "新建目录成功" : "新建文档成功";
+  const failMsg = documentInfo.value.type === NodeType.FOLDER ? "新建目录失败" : "新建文档失败";
   if (documentInfo.value.type === NodeType.FOLDER) {
-    const response = await createFolder({
+    response = await createFolder({
       title: documentInfo.value.title,
       parentId: documentInfo.value.parentId,
       domainId: documentInfo.value.domainId,
       logo: documentInfo.value.logo,
     });
-    if (response.code === 200) {
+  } else {
+    response =await createDocument({
+      title: documentInfo.value.title,
+      folderId: documentInfo.value.parentId,
+      logo: documentInfo.value.logo,
+      content: '',
+      domainId: documentInfo.value.domainId,
+    });
+  }
+  if (response.code === 200) {
       ElMessage({
-        message: "新建目录成功",
+        message: successMsg,
         type: "success",
       });
       documentInfo.value.id = response.data.id;
     } else {
       ElMessage({
-        message: "新建目录失败",
+        message: failMsg,
         type: "error",
       });
     }
-  } else {
-    await createDoc({
-      title: documentInfo.value.title,
-      parentId: documentInfo.value.parentId,
-      domainId: documentInfo.value.domainId,
-      logo: documentInfo.value.logo,
-    });
-  }
 };
 
 const updateNode = async () => {

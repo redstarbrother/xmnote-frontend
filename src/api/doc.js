@@ -34,9 +34,9 @@ export const updateFolder = (params) => {
 };
 
 // 创建文档
-export const createDoc = (params) => {
+export const createDocument = (params) => {
     return request({
-        url: '/doc/createDoc',
+        url: '/doc/createDocument',
         method: 'post',
         params: {
             ...params
