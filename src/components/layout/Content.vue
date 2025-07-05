@@ -1,16 +1,22 @@
 <template>
   <div class="content-container">
     <div class="content-title">
-      <input class="content-title-input" placeholder="请输入标题" @keyup.enter="handleEnterTitle" />
-
+      <input
+        class="content-title-input"
+        v-model="title"
+        placeholder="请输入标题"
+        @keyup.enter="handleEnterTitle"
+      />
     </div>
     <div class="content-editor">
       <XmEditor
         :extensions="extensions"
         :showToolbar="false"
         :backgroundColorOnFocus="'#ffffff'"
+        :placeholder="content"
         :showBorder="false"
         :height="'100%'"
+        :onUpdate="handleEditorChange"
       />
     </div>
     <div class="content-footer">
@@ -20,7 +26,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, watch, nextTick } from "vue";
 import XmEditor from "xm-editor";
 import {
   Heading,
@@ -36,6 +42,10 @@ import {
   CodeBlock,
 } from "xm-editor";
 import "xm-editor/xm-editor.css";
+import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
+
+const breadcrumbStore = useBreadcrumbStore();
+const currentNoteId = computed(() => breadcrumbStore.currentNoteId);
 
 const extensions = [
   Heading,
@@ -52,10 +62,48 @@ const extensions = [
 ];
 
 const xmEditorRef = ref(null);
+const title = ref("");
+const content = ref({});
 
 const handleEnterTitle = () => {
   console.log("回车键被按下！");
+};
 
+const handleEditorChange = ({ editor }) => {
+  const json = editor.getJSON();
+  console.log("编辑器内容改变：", editor.getJSON());
+  console.log("json: ", JSON.stringify(json));
+  
+};
+
+// 监听当前文档 ID 变化，自动加载内容
+watch(
+  currentNoteId,
+  async (newId) => {
+    if (!newId) return;
+
+    console.log("newId: ", newId);
+
+    // 模拟获取文档数据
+    const doc = mockDocs[2];
+    title.value = doc.title;
+    content.value = JSON.parse(doc.content);
+
+    await nextTick();
+    if (xmEditorRef.value?.editor) {
+      xmEditorRef.value.editor.commands.setContent(content.value);
+    }
+  },
+  { immediate: true }
+);
+
+// 模拟文档数据
+const mockDocs = {
+  1: { title: "文档1", content: "这是文档1内容" },
+  2: {
+    title: "Python 与 Java 对比",
+    content: "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"print(\\\"Hello Python\\\")\\nSystem.out.println(\\\"Hello Java\\\");\"}]}]}",
+  },
 };
 </script>
 
@@ -87,7 +135,7 @@ const handleEnterTitle = () => {
 
   .content-editor {
     width: 80%;
-    flex-grow: 1
+    flex-grow: 1;
   }
 }
 </style>

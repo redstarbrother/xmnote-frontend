@@ -1,6 +1,6 @@
 <template>
   <div class="node-item">
-    <div class="item-container" @click="expandDir">
+    <div class="item-container" @click="expandDir" :class="{ selected: documentInfo.id === breadcrumbStore.currentNoteId }">
       <div class="item-info">
         <span
           class="item-info-logo"
@@ -114,22 +114,21 @@ const expandDir = (event) => {
   if (event.target.closest(".option-more")) {
     return;
   }
+  console.log("run expand dir");
+  console.log("type: ", documentInfo.value.type);
+  
   if (documentInfo.value.type === NodeType.FOLDER) {
     expanded.value = !expanded.value;
   }
-  // else if (documentInfo.value.type === NodeType.NOTE) {
-  //   // 打开笔记
-  //   console.log("打开笔记");
-  //   breadcrumbStore.setCurrentNoteId(documentInfo.value.id);
-  // }
+  else if (documentInfo.value.type === NodeType.DOCUMENT) {
+    // 打开笔记
+    console.log("打开笔记");
+    breadcrumbStore.setCurrentNoteId(documentInfo.value.id);
+  }
 };
 
 const showPopoverMenu = (event) => {
   event.stopPropagation();
-  // if(popoverMenuVisible.value == true) {
-  //   popoverMenuVisible.value = false;
-  //   return;
-  // }
   const rect = event.currentTarget.getBoundingClientRect();
   popoverMenuPosition.value = {
     top: rect.bottom + 6 + window.scrollY,
@@ -151,7 +150,7 @@ const onPopoverSelect = (event, action) => {
   } else if (action === "addFolder") {
     addTemporaryNode(NodeType.FOLDER);
   } else if (action === "addDoc") {
-    addTemporaryNode(NodeType.NOTE);
+    addTemporaryNode(NodeType.DOCUMENT);
   }
   popoverMenuVisible.value = false;
 };
@@ -192,20 +191,12 @@ const addTemporaryNode = (type) => {
   if (!Array.isArray(documentInfo.value.child)) {
     documentInfo.value.child = [];
   }
-  console.log(
-    "documentInfo.type === NodeType.FOLDER : ",
-    documentInfo.value.type,
-    NodeType.FOLDER,
-    documentInfo.value.type === NodeType.FOLDER
-  );
   if (type === NodeType.FOLDER) {
     newNode = addFolderNode();
   } else {
     newNode = addNoteNode();
   }
   if (newNode) {
-    console.log(newNode);
-
     documentInfo.value.child.push(newNode);
     expanded.value = true;
   }
@@ -232,7 +223,7 @@ const addNoteNode = () => {
   const newItem = {
     id: `tmp_${Date.now()}`,
     title: "新建文档",
-    type: NodeType.NOTE,
+    type: NodeType.DOCUMENT,
     logo: "📝",
     depth: documentInfo.value.depth + 1,
     parentId: documentInfo.value.id,
@@ -295,6 +286,10 @@ const updateNode = async () => {
 .node-item {
   margin: 5px 0;
   cursor: pointer;
+
+  .selected {
+    background-color: #e8e8e7;
+  }
 
   .item-container {
     display: flex;
