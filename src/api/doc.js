@@ -55,83 +55,24 @@ export const updateDoc = (params) => {
     });
 };
 
-// 获取用户详情
-export const getUserInfoById = (userId) => {
+// 删除文档
+export const deleteDocument = (params) => {
     return request({
-        url: '/user/getUserInfoById',
+        url: '/doc/deleteDocument',
+        method: 'post',
+        params: {
+            ...params
+        }
+    });
+};
+
+// 获取文档
+export const getDocument = (params) => {
+    return request({
+        url: '/doc/getDocument',
         method: 'get',
         params: {
-            userId
+            ...params
         }
-    });
-};
-
-export const getUserInfoByOpenId = (openId) => {
-    return request({
-        url: '/user/getUserInfoByOpenId',
-        method: 'get',
-        params: {
-            openId
-        }
-    });
-};
-
-// 更新用户信息
-export const updateUser = (userForm) => {
-    return request({
-        url: '/user/updateUser',
-        method: 'post',
-        data: userForm
-    });
-};
-
-// 删除用户
-export const deleteUser = (userId) => {
-    return request({
-        url: '/user/deleteUser',
-        method: 'post',
-        params: {
-            userId
-        }
-    });
-};
-
-// 获取用户设置
-export const getUserSettings = () => {
-    return request({
-        url: '/user/settings',
-        method: 'get'
-    });
-};
-
-// 更新用户设置
-export const updateUserSettings = (settings) => {
-    return request({
-        url: '/user/settings',
-        method: 'put',
-        data: settings
-    });
-};
-
-// 上传头像
-export const uploadAvatar = (file) => {
-    const formData = new FormData();
-    formData.append('avatar', file);
-    return request({
-        url: '/user/avatar',
-        method: 'post',
-        data: formData,
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    });
-};
-
-// 添加角色
-export const addRole = (formData) => {
-    return request({
-        url: '/user/addRole',
-        method: 'post',
-        data: formData,
     });
 };
