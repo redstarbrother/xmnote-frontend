@@ -45,13 +45,11 @@ export const createDocument = (params) => {
 };
 
 // 更新文档
-export const updateDoc = (params) => {
+export const updateDocument = (data) => {
     return request({
-        url: '/doc/updateDoc',
+        url: '/doc/updateDocument',
         method: 'post',
-        params: {
-            ...params
-        }
+        data: data
     });
 };
 

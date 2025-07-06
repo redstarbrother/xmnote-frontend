@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from "vue";
+import { ref, computed, watch, nextTick, onMounted } from "vue";
 import XmEditor from "xm-editor";
 import {
   Heading,
@@ -43,7 +43,7 @@ import {
 } from "xm-editor";
 import "xm-editor/xm-editor.css";
 import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
-import { getDocument, deleteDocument } from "@/api/doc";
+import { getDocument, deleteDocument, updateDocument } from "@/api/doc";
 import { ElMessage } from "element-plus";
 
 
@@ -65,18 +65,52 @@ const extensions = [
 ];
 
 const xmEditorRef = ref(null);
+const logo = ref("");
 const title = ref("");
 const content = ref({});
+
+const isChanged = ref(false);
 
 const handleEnterTitle = () => {
   console.log("回车键被按下！");
 };
 
+// 内容修改回调方法
 const handleEditorChange = ({ editor }) => {
-  const json = editor.getJSON();
-  console.log("编辑器内容改变：", editor.getJSON());
-  console.log("json: ", JSON.stringify(json));
+  content.value = editor.getJSON();
 };
+
+onMounted(() => {
+  // 设置30秒自动保存
+  setInterval(() => {
+    if (isChanged.value) {
+      // 保存文档
+      saveDocument();
+    }
+  }, 5000)
+});
+
+// 保存文档
+const saveDocument = async () => {
+  if (!currentNoteId.value) return;
+
+  const response = await updateDocument({
+    id: currentNoteId.value,
+    title: title.value,
+    logo: logo.value,
+    content: JSON.stringify(content.value),
+  });
+  if (response.code !== 200) {
+    ElMessage.error("内容保存失败");
+  } else {
+    isChanged.value = false;
+  }
+};
+
+// 监听文档信息变化，更改isChanged
+watch([logo, title, content], () => {
+    isChanged.value = true;
+}, {deep: true});
 
 // 监听当前文档 ID 变化，自动加载内容
 watch(
@@ -97,6 +131,7 @@ watch(
     } else {
       title.value = response.data.title;
       content.value = JSON.parse(response.data.content);
+      logo.value = response.data.logo;
     }
 
     await nextTick();
@@ -109,7 +144,7 @@ watch(
 
 // 模拟文档数据
 const mockDocs = {
-  1: { title: "文档1", content: "这是文档1内容" },
+  1: { title: "文档1", content: "这是文档1内容", logo: "https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png" },
   2: {
     title: "Python 与 Java 对比",
     content:
