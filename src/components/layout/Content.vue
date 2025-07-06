@@ -42,13 +42,12 @@ import {
   CodeBlock,
 } from "xm-editor";
 import "xm-editor/xm-editor.css";
-import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
+import { useDocumentStore } from "@/stores/documentStore";
 import { getDocument, deleteDocument, updateDocument } from "@/api/doc";
 import { ElMessage } from "element-plus";
 
-
-const breadcrumbStore = useBreadcrumbStore();
-const currentNoteId = computed(() => breadcrumbStore.currentNoteId);
+const documentStore = useDocumentStore();
+const documentId = computed(() => documentStore.getDocumentId());
 
 const extensions = [
   Heading,
@@ -81,7 +80,7 @@ const handleEditorChange = ({ editor }) => {
 };
 
 onMounted(() => {
-  // 设置30秒自动保存
+  // TODO 设置30秒自动保存
   setInterval(() => {
     if (isChanged.value) {
       // 保存文档
@@ -92,10 +91,10 @@ onMounted(() => {
 
 // 保存文档
 const saveDocument = async () => {
-  if (!currentNoteId.value) return;
+  if (!documentId.value) return;
 
   const response = await updateDocument({
-    id: currentNoteId.value,
+    id: documentId.value,
     title: title.value,
     logo: logo.value,
     content: JSON.stringify(content.value),
@@ -114,15 +113,12 @@ watch([logo, title, content], () => {
 
 // 监听当前文档 ID 变化，自动加载内容
 watch(
-  currentNoteId,
-  async (documentId) => {
-    if (!documentId) return;
-
-    console.log("documentId: ", documentId);
-
+  documentId,
+  async (id) => {
+    if (!id) return;
     // 从接口获取文档数据
     const response = await getDocument({
-      documentId: documentId,
+      documentId: id,
     });
 
     if (response.code !== 200) {
@@ -142,15 +138,6 @@ watch(
   { immediate: true }
 );
 
-// 模拟文档数据
-const mockDocs = {
-  1: { title: "文档1", content: "这是文档1内容", logo: "https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png" },
-  2: {
-    title: "Python 与 Java 对比",
-    content:
-      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"print(\\"Hello Python\\")\\nSystem.out.println(\\"Hello Java\\");"}]}]}',
-  },
-};
 </script>
 
 <style scoped lang="scss">

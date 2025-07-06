@@ -12,15 +12,15 @@
       <div class="domain-area">
         <div
           class="domain-item"
-          v-for="domain in domains"
+          v-for="domain in folderStore.getDomainList()"
           :key="domain.domainName"
         >
           <p class="category-title">{{ domain.domainName }}</p>
           <div class="note-list">
             <NoteItem
-              v-for="document in domain.documents"
-              :key="document.id"
-              :item="document"
+              v-for="node in domain.nodeList"
+              :key="node.id"
+              :item="node"
             />
           </div>
         </div>
@@ -38,20 +38,21 @@ import { onMounted, ref } from "vue";
 import NoteItem from "@/components/common/sidebar/NodeItem.vue";
 import UserArea from "@/components/common/sidebar/UserArea.vue";
 import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
+import { useFolderStore } from "@/stores/folderStore";
 import { Search } from "@element-plus/icons-vue";
-import { getDirInfo } from "@/api/doc";
+import { getDirInfo } from "@/api/folder";
 
-const notes = ref([]);
-const domains = ref([]);
 const searchContent = ref("");
 const breadcrumbStore = useBreadcrumbStore();
+const folderStore = useFolderStore();
 
 onMounted(() => {
-  initNoteList();
+  initDomainList();
   // 初始化面包屑store的notes数据
-  breadcrumbStore.setFlatNotes(notes.value);
+  breadcrumbStore.setFlatNotes(folderStore.getDomainList());
 });
 
+// 测试数据
 let format = [
   {
     domainName: "笔记",
@@ -70,90 +71,10 @@ let format = [
 ];
 
 // 笔记目录列表初始化
-async function initNoteList() {
-  // 随机生成一些笔记
-  notes.value = [
-    {
-      id: "J6G4FU0FDS6AJGFR877EJ7F43SCFG123",
-      title: "工作笔记",
-      logo: "📂",
-      type: "folder",
-      depth: 0,
-      parentId: null,
-      child: [
-        {
-          id: "X7K4GR0FD76AKQFR123EK9F42ABCD456",
-          title: "会议记录",
-          logo: "📝",
-          type: "note",
-          depth: 1,
-          parentId: "J6G4FU0FDS6AJGFR877EJ7F43SCFG123",
-          child: [],
-        },
-        {
-          id: "B6Y8RT0SD98LMGQP876AJ3T65ZXCV789",
-          title: "项目计划",
-          logo: "📝",
-          type: "note",
-          depth: 1,
-          parentId: "J6G4FU0FDS6AJGFR877EJ7F43SCFG123",
-          child: [],
-        },
-      ],
-    },
-    {
-      id: "C9H2PT1FGS9LKJHY564EW3G89QWER321",
-      title: "生活记录",
-      logo: "📂",
-      type: "folder",
-      depth: 0,
-      parentId: null,
-      child: [
-        {
-          id: "K9P7YU3JJ88LOPWR234EL1M02QWED654",
-          title: "旅行计划",
-          logo: "📝",
-          type: "note",
-          depth: 1,
-          parentId: "C9H2PT1FGS9LKJHY564EW3G89QWER321",
-          child: [],
-        },
-        {
-          id: "T7U3NB8ZW22LXCVR543AK6P77EDCF987",
-          title: "购物清单",
-          logo: "📝",
-          type: "note",
-          depth: 1,
-          parentId: "C9H2PT1FGS9LKJHY564EW3G89QWER321",
-          child: [],
-        },
-      ],
-    },
-    {
-      id: "L0F5DR8UE21MNBRY432EF2H88PLMK321",
-      title: "学习笔记",
-      logo: "📂",
-      type: "folder",
-      depth: 0,
-      parentId: null,
-      child: [],
-    },
-    {
-      id: "L0F5DR8UE21MNBRY432EF5H88PLMK321",
-      title: "灵感随记",
-      logo: "📝",
-      type: "note",
-      depth: 0,
-      parentId: null,
-      child: [],
-    },
-  ];
-
+async function initDomainList() {
+  // TODO 动态获取用户id
   let response = await getDirInfo({ userId: 2 });
-  
-  domains.value = response.data.domainFolderTreeList;
-  console.log("domains.value", domains.value);
-
+  folderStore.setDomainList(response.data.domainFolderTreeList);
 }
 </script>
 

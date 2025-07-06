@@ -1,6 +1,6 @@
 <template>
   <div class="node-item">
-    <div class="item-container" @click="expandDir" :class="{ selected: documentInfo.id === breadcrumbStore.currentNoteId }">
+    <div class="item-container" @click="expandDir" :class="{ selected: documentInfo.id === documentStore.getDocumentId() }">
       <div class="item-info">
         <span
           class="item-info-logo"
@@ -80,11 +80,12 @@
 <script setup>
 import { NodeType } from "@/enums/NodeType";
 import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
-import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
+import { useDocumentStore } from "@/stores/documentStore";
 import { ArrowDownBold, ArrowLeftBold } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { onClickOutside } from "@vueuse/core";
-import { createFolder, createDocument } from "@/api/doc";
+import { createFolder } from "@/api/folder";
+import { createDocument } from "@/api/doc";
 
 const props = defineProps({
   item: {
@@ -102,8 +103,8 @@ const popoverMenuVisible = ref(false);
 const popoverMenuPosition = ref({ top: 0, left: 0 });
 const popoverMenuRef = ref(null);
 const triggerBtn = ref(null); // 用于绑定“...”按钮元素
-// 面包屑strore
-const breadcrumbStore = useBreadcrumbStore();
+// 文档store
+const documentStore = useDocumentStore();
 // 重命名状态
 const isRenaming = ref(false);
 const editTitle = ref(documentInfo.value.title);
@@ -123,7 +124,7 @@ const expandDir = (event) => {
   else if (documentInfo.value.type === NodeType.DOCUMENT) {
     // 打开笔记
     console.log("打开笔记");
-    breadcrumbStore.setCurrentNoteId(documentInfo.value.id);
+    documentStore.setDocument(documentInfo.value);
   }
 };
 
