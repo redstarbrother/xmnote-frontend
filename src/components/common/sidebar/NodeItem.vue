@@ -318,7 +318,6 @@ const updateNode = async () => {
       folderId: documentInfo.value.parentId,
       logo: documentInfo.value.logo,
       content: null,
-      domainId: documentInfo.value.domainId,
     });
   }
   if (response.code === 200) {
