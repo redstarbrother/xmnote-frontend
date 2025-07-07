@@ -1,6 +1,10 @@
 <template>
   <div class="node-item">
-    <div class="item-container" @click="expandDir" :class="{ selected: documentInfo.id === documentStore.getDocumentId() }">
+    <div
+      class="item-container"
+      @click="expandFolder"
+      :class="{ selected: documentInfo.id === documentStore.getDocumentId() }"
+    >
       <div class="item-info">
         <span
           class="item-info-logo"
@@ -84,8 +88,8 @@ import { useDocumentStore } from "@/stores/documentStore";
 import { ArrowDownBold, ArrowLeftBold } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { onClickOutside } from "@vueuse/core";
-import { createFolder } from "@/api/folder";
-import { createDocument } from "@/api/doc";
+import { createFolder, updateFolder } from "@/api/folder";
+import { createDocument, updateDocument } from "@/api/doc";
 
 const props = defineProps({
   item: {
@@ -109,19 +113,19 @@ const documentStore = useDocumentStore();
 const isRenaming = ref(false);
 const editTitle = ref(documentInfo.value.title);
 const inputRef = ref(null);
-// 选中节点
-const expandDir = (event) => {
+
+// 展开目录
+const expandFolder = (event) => {
   // 如果点击的是 .option-more 或其子元素，则不触发展开
   if (event.target.closest(".option-more")) {
     return;
   }
   console.log("run expand dir");
   console.log("type: ", documentInfo.value.type);
-  
+
   if (documentInfo.value.type === NodeType.FOLDER) {
     expanded.value = !expanded.value;
-  }
-  else if (documentInfo.value.type === NodeType.DOCUMENT) {
+  } else if (documentInfo.value.type === NodeType.DOCUMENT) {
     // 打开笔记
     console.log("打开笔记");
     documentStore.setDocument(documentInfo.value);
@@ -166,6 +170,9 @@ const onRename = () => {
 };
 
 const confirmRename = () => {
+  if(!isRenaming.value) {
+    return;
+  }
   if (editTitle.value.trim() !== "") {
     documentInfo.value.title = editTitle.value.trim();
     // 如果需要调用 API 同步保存，建议在这里加
@@ -175,6 +182,8 @@ const confirmRename = () => {
       documentInfo.value.isTemp = false;
     } else {
       // 更新node
+      console.log("更新node");
+      
       updateNode();
     }
   }
@@ -245,8 +254,14 @@ onMounted(() => {
 const saveNode = async () => {
   // 新增node
   let response = undefined;
-  const successMsg = documentInfo.value.type === NodeType.FOLDER ? "新建目录成功" : "新建文档成功";
-  const failMsg = documentInfo.value.type === NodeType.FOLDER ? "新建目录失败" : "新建文档失败";
+  const successMsg =
+    documentInfo.value.type === NodeType.FOLDER
+      ? "新建目录成功"
+      : "新建文档成功";
+  const failMsg =
+    documentInfo.value.type === NodeType.FOLDER
+      ? "新建目录失败"
+      : "新建文档失败";
   if (documentInfo.value.type === NodeType.FOLDER) {
     response = await createFolder({
       title: documentInfo.value.title,
@@ -255,31 +270,68 @@ const saveNode = async () => {
       logo: documentInfo.value.logo,
     });
   } else {
-    response =await createDocument({
+    response = await createDocument({
       title: documentInfo.value.title,
       folderId: documentInfo.value.parentId,
       logo: documentInfo.value.logo,
-      content: '',
+      content: "",
       domainId: documentInfo.value.domainId,
     });
   }
   if (response.code === 200) {
-      ElMessage({
-        message: successMsg,
-        type: "success",
-      });
-      documentInfo.value.id = response.data.id;
-    } else {
-      ElMessage({
-        message: failMsg,
-        type: "error",
-      });
-    }
+    ElMessage({
+      message: successMsg,
+      type: "success",
+    });
+    documentInfo.value.id = response.data.id;
+  } else {
+    ElMessage({
+      message: failMsg,
+      type: "error",
+    });
+  }
 };
 
 const updateNode = async () => {
-  // todo 更新node
-  // documentInfo.value.isTemp = false;
+  // 更新node
+  let response = undefined;
+  const successMsg =
+    documentInfo.value.type === NodeType.FOLDER
+      ? "更新目录成功"
+      : "更新文档成功";
+  const failMsg =
+    documentInfo.value.type === NodeType.FOLDER
+      ? "更新目录失败"
+      : "更新文档失败";
+  if (documentInfo.value.type === NodeType.FOLDER) {
+    response = await updateFolder({
+      id: documentInfo.value.id,
+      title: documentInfo.value.title,
+      parentId: documentInfo.value.parentId,
+      domainId: documentInfo.value.domainId,
+      logo: documentInfo.value.logo,
+    });
+  } else {
+    response = await updateDocument({
+      id: documentInfo.value.id,
+      title: documentInfo.value.title,
+      folderId: documentInfo.value.parentId,
+      logo: documentInfo.value.logo,
+      content: null,
+      domainId: documentInfo.value.domainId,
+    });
+  }
+  if (response.code === 200) {
+    ElMessage({
+      message: successMsg,
+      type: "success",
+    });
+  } else {
+    ElMessage({
+      message: failMsg,
+      type: "error",
+    });
+  }
 };
 </script>
 

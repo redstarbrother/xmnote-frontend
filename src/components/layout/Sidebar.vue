@@ -15,7 +15,14 @@
           v-for="domain in folderStore.getDomainList()"
           :key="domain.domainName"
         >
-          <p class="category-title">{{ domain.domainName }}</p>
+          <div class="domain-item-content">
+            <p>{{ domain.domainName }}</p>
+            <span class="option-add" @click="addFolder(domain.domainId)">
+              <el-icon>
+                <Plus color="#868684" />
+              </el-icon>
+            </span>
+          </div>
           <div class="note-list">
             <NoteItem
               v-for="node in domain.nodeList"
@@ -35,6 +42,7 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
+import { NodeType } from "@/enums/NodeType";
 import NoteItem from "@/components/common/sidebar/NodeItem.vue";
 import UserArea from "@/components/common/sidebar/UserArea.vue";
 import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
@@ -76,6 +84,28 @@ async function initDomainList() {
   let response = await getDirInfo({ userId: 2 });
   folderStore.setDomainList(response.data.domainFolderTreeList);
 }
+
+// 新增文件夹
+const addFolder = (domainId) => {
+    const newItem = {
+    id: `tmp_${Date.now()}`,
+    title: "新建文件夹",
+    type: NodeType.FOLDER,
+    logo: "📂",
+    depth: 0,
+    parentId: null,
+    domainId: domainId,
+    child: [],
+    isTemp: true, // 用于标记是否为临时项
+  };
+  folderStore.addFolder(domainId, newItem);
+};
+
+const addFolderNode = () => {
+  console.log("新建目录");
+
+};
+
 </script>
 
 <style scoped lang="scss">
@@ -91,10 +121,6 @@ async function initDomainList() {
 
   .main-content {
     flex-grow: 1;
-
-    .category-title {
-      color: #91918e;
-    }
     .search-area {
       margin-bottom: 20px;
     }
@@ -105,24 +131,48 @@ async function initDomainList() {
       scrollbar-width: none; // Firefox 隐藏滚动条
       -ms-overflow-style: none; // IE/Edge 隐藏滚动条
 
-      &::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-        background: transparent;
-        opacity: 0; // 初始隐藏
-        transition: opacity 0.3s;
-      }
+      .domain-item-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        p {
+          color: #91918e;
+        }
+        .option-add {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 5px;
+          cursor: pointer;
+          opacity: 0; /* 默认隐藏 */
+          transition: opacity 0.2s ease; /* 添加过渡效果 */
+        }
 
-      &::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.3);
-        border-radius: 4px;
-      }
-
-      &:hover {
-        &::-webkit-scrollbar {
-          opacity: 1; // 鼠标悬停时显示滚动条
+        &:hover {
+          .option-add {
+            opacity: 1; /* 鼠标悬停时显示 */
+          }
         }
       }
+
+      // &::-webkit-scrollbar {
+      //   width: 8px;
+      //   height: 8px;
+      //   background: transparent;
+      //   opacity: 0; // 初始隐藏
+      //   transition: opacity 0.3s;
+      // }
+
+      // &::-webkit-scrollbar-thumb {
+      //   background-color: rgba(0, 0, 0, 0.3);
+      //   border-radius: 4px;
+      // }
+
+      // &:hover {
+      //   &::-webkit-scrollbar {
+      //     opacity: 1; // 鼠标悬停时显示滚动条
+      //   }
+      // }
     }
 
     .note-area {
