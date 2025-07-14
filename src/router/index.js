@@ -1,13 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import NoteView from '../views/NoteView.vue'
+import Login from '../views/Login.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'index',
-      component: NoteView,
+      name: 'login',
+      component: Login,
     },
     {
       path: '/note',

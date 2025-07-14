@@ -28,6 +28,18 @@ import Footer from '@/components/layout/Footer.vue';
   background-color: #ffffff;
   height: 100vh;
   width: 100%;
-  overflow: auto;
+  overflow: hidden;
+
+  .el-container {
+    height: 100%;
+  }
+
+  .el-main {
+    padding: 0;
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
 }
 </style>

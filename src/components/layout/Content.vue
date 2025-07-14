@@ -13,7 +13,7 @@
         :extensions="extensions"
         :showToolbar="false"
         :backgroundColorOnFocus="'#ffffff'"
-        :placeholder="content"
+        :placeholder="sourceContent"
         :showBorder="false"
         :height="'100%'"
         :onUpdate="handleEditorChange"
@@ -40,6 +40,7 @@ import {
   Blockquote,
   HorizontalRule,
   CodeBlock,
+  Image,
 } from "xm-editor";
 import "xm-editor/xm-editor.css";
 import { useDocumentStore } from "@/stores/documentStore";
@@ -61,12 +62,15 @@ const extensions = [
   Blockquote,
   HorizontalRule,
   CodeBlock,
+  Image.configure({
+    uploadUrl: import.meta.env.VITE_IMAGE_URL,
+  }),
 ];
 
-const xmEditorRef = ref(null);
 const logo = ref("");
 const title = ref("");
 const content = ref({});
+const sourceContent = ref({});
 
 const isChanged = ref(false);
 
@@ -77,6 +81,7 @@ const handleEnterTitle = () => {
 // 内容修改回调方法
 const handleEditorChange = ({ editor }) => {
   content.value = editor.getJSON();
+  console.log(content.value);
 };
 
 onMounted(() => {
@@ -86,7 +91,7 @@ onMounted(() => {
       // 保存文档
       saveDocument();
     }
-  }, 5000)
+  }, 5000);
 });
 
 // 保存文档
@@ -107,9 +112,13 @@ const saveDocument = async () => {
 };
 
 // 监听文档信息变化，更改isChanged
-watch([logo, title, content], () => {
+watch(
+  [logo, title, content],
+  () => {
     isChanged.value = true;
-}, {deep: true});
+  },
+  { deep: true }
+);
 
 // 监听当前文档 ID 变化，自动加载内容
 watch(
@@ -126,37 +135,35 @@ watch(
       return;
     } else {
       title.value = response.data.title;
-      content.value = JSON.parse(response.data.content);
+      sourceContent.value = JSON.parse(response.data.content);
       logo.value = response.data.logo;
+      content.value = sourceContent.value;
     }
 
     await nextTick();
-    if (xmEditorRef.value?.editor) {
-      xmEditorRef.value.editor.commands.setContent(content.value);
-    }
   },
   { immediate: true }
 );
-
 </script>
 
 <style scoped lang="scss">
 .content-container {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  width: 100%;
   align-items: center;
-  justify-content: flex-start;
-  flex-grow: 1;
-  height: calc(100vh - 100px);
 
   .content-title {
     width: 80%;
+    height: 60px; // 固定高度
+    flex-shrink: 0;
 
     .content-title-input {
       width: 100%;
       font-size: 40px;
       font-weight: 600;
-      height: 60px;
+      height: 100%;
       border: none;
       outline: none;
 
@@ -168,7 +175,12 @@ watch(
 
   .content-editor {
     width: 80%;
-    flex-grow: 1;
+    flex: 1;
+    overflow: auto;
+  }
+
+  .content-footer {
+    flex-shrink: 0;
   }
 }
 </style>
