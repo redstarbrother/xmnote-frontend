@@ -1,4 +1,5 @@
 import axios from 'axios';
+import router from '@/router';
 
 console.log("import.meta.env.VITE_API_BASE_URL: " + import.meta.env.VITE_API_BASE_URL)
 // 创建 axios 实例
@@ -40,8 +41,8 @@ request.interceptors.response.use(
                     break;
                 case 401:
                     localStorage.removeItem('token');
-                    // router.push('/login');
                     console.error('未授权，请重新登录:', res.message);
+                    router.push('/login');
                     break;
                 case 403:
                     console.error('没有权限访问该资源:', res.message);
@@ -65,7 +66,7 @@ request.interceptors.response.use(
             switch (error.response.status) {
                 case 401:
                     localStorage.removeItem('token');
-                    // router.push('/login');
+                    router.push('/login');
                     console.error('未授权，请重新登录:', errorMsg);
                     break;
                 case 403:

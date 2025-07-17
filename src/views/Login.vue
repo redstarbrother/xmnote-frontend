@@ -5,14 +5,14 @@
         <h1>西木笔记</h1>
       </div>
       <div class="login-form">
-        <el-input v-model="username" placeholder="请输入用户名"></el-input>
+        <el-input v-model="loginIdentifier" placeholder="请输入手机号/邮箱"></el-input>
         <el-input
           v-model="password"
           placeholder="请输入密码"
           type="password"
           @keyup.enter="handleLogin"
         ></el-input>
-        <el-button type="primary" @click="handleLogin" >登录</el-button>
+        <el-button type="primary" @click="handleLogin">登录</el-button>
       </div>
     </div>
   </div>
@@ -21,25 +21,34 @@
 <script setup>
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
-// import { login } from '@/api/user'
+import { login } from "@/api/auth";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-const username = ref("");
+const loginIdentifier = ref("");
 const password = ref("");
 
 const handleLogin = async () => {
-  console.log(username.value, password.value);
-  if (!username.value || !password.value) {
-    ElMessage.error("用户名和密码不能为空");
+  console.log(loginIdentifier.value, password.value);
+  if (!loginIdentifier.value || !password.value) {
+    ElMessage.error("手机号/邮箱和密码不能为空");
     return;
   }
-  if (username.value === "admin" && password.value === "admin") {
-    ElMessage.success("登录成功");
-    router.push("/note");
-  } else {
-    ElMessage.error("用户名或密码错误");
+  try {
+    const res = await login({
+      loginIdentifier: loginIdentifier.value,
+      password: password.value,
+    });
+    if (res.code === 200) {
+      ElMessage.success("登录成功");
+      localStorage.setItem('token', res.data.token);
+      router.push("/note");
+    } else {
+      ElMessage.error(res.message);
+    }
+  } catch (error) {
+    ElMessage.error(error.message);
   }
 };
 </script>
@@ -63,7 +72,7 @@ const handleLogin = async () => {
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    
+
     .login-header {
       display: flex;
       flex-direction: column;
