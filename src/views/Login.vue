@@ -23,11 +23,13 @@ import { ref } from "vue";
 import { ElMessage } from "element-plus";
 import { login } from "@/api/auth";
 import { useRouter } from "vue-router";
+import { LoginType } from "@/enums/LoginType";
 
 const router = useRouter();
 
 const loginIdentifier = ref("");
 const password = ref("");
+const loginType = ref(LoginType.PASSWORD);
 
 const handleLogin = async () => {
   console.log(loginIdentifier.value, password.value);
@@ -37,8 +39,9 @@ const handleLogin = async () => {
   }
   try {
     const res = await login({
-      loginIdentifier: loginIdentifier.value,
-      password: password.value,
+      principal: loginIdentifier.value,
+      credential: password.value,
+      loginType: loginType.value,
     });
     if (res.code === 200) {
       ElMessage.success("登录成功");

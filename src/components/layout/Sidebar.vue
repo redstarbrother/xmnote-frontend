@@ -49,6 +49,7 @@ import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
 import { useFolderStore } from "@/stores/folderStore";
 import { Search } from "@element-plus/icons-vue";
 import { getDirInfo } from "@/api/folder";
+import { getUserIdFromToken } from "@/utils/jwtUtil";
 
 const searchContent = ref("");
 const breadcrumbStore = useBreadcrumbStore();
@@ -80,8 +81,12 @@ let format = [
 
 // 笔记目录列表初始化
 async function initDomainList() {
-  // TODO 动态获取用户id
-  let response = await getDirInfo({ userId: 2 });
+  const userId = getUserIdFromToken();
+  if (!userId) {
+    console.error("User ID not found in token");
+    return;
+  }
+  let response = await getDirInfo({ userId: userId });
   folderStore.setDomainList(response.data.domainFolderTreeList);
 }
 

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import router from '@/router';
+import { ElMessage } from 'element-plus';
 
 console.log("import.meta.env.VITE_API_BASE_URL: " + import.meta.env.VITE_API_BASE_URL)
 // 创建 axios 实例
@@ -37,24 +38,24 @@ request.interceptors.response.use(
             // 处理业务层面的错误
             switch (res.code) {
                 case 400:
-                    console.error('请求参数错误:', res.message);
+                    ElMessage.error('请求参数错误');
                     break;
                 case 401:
                     localStorage.removeItem('token');
-                    console.error('未授权，请重新登录:', res.message);
+                    ElMessage.error('未授权，请重新登录');
                     router.push('/login');
                     break;
                 case 403:
-                    console.error('没有权限访问该资源:', res.message);
+                    ElMessage.error('没有权限访问该资源');
                     break;
                 case 404:
-                    console.error('请求的资源不存在:', res.message);
+                    ElMessage.error('请求的资源不存在');
                     break;
                 case 500:
-                    console.error('服务器错误:', res.message);
+                    ElMessage.error('服务器错误, ' + res.message);
                     break;
                 default:
-                    console.error(res.message || '未知错误');
+                    ElMessage.error(res.message || '未知错误');
             }
             return Promise.reject(res); // 直接返回原始响应对象，保留完整错误信息
         }
@@ -62,29 +63,9 @@ request.interceptors.response.use(
     error => {
         // 处理 HTTP 层面的错误
         if (error.response) {
-            const errorMsg = error.response.data?.message || '请求失败';
-            switch (error.response.status) {
-                case 401:
-                    localStorage.removeItem('token');
-                    router.push('/login');
-                    console.error('未授权，请重新登录:', errorMsg);
-                    break;
-                case 403:
-                    console.error('没有权限访问该资源:', errorMsg);
-                    break;
-                case 404:
-                    console.error('请求的资源不存在:', errorMsg);
-                    break;
-                case 500:
-                    console.error('服务器错误:', errorMsg);
-                    break;
-                default:
-                    console.error('发生错误:', errorMsg);
-            }
-            // 确保错误对象包含服务器返回的错误信息
-            if (error.response.data) {
-                error.message = error.response.data.message || errorMsg;
-            }
+            ElMessage.error(error.response.data.message || '未知错误');
+        } else {
+            ElMessage.error(error.message || '未知错误');
         }
         return Promise.reject(error);
     }
