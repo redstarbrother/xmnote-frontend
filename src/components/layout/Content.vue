@@ -34,17 +34,21 @@ import {
   Italic,
   Strike,
   Underline,
-  BulletList,
-  OrderedList,
-  TaskList,
+  List,
   Blockquote,
   HorizontalRule,
   CodeBlock,
   Image,
+  Table,
 } from "xm-editor";
 import "xm-editor/xm-editor.css";
 import { useDocumentStore } from "@/stores/documentStore";
-import { getDocument, deleteDocument, updateDocument } from "@/api/doc";
+import {
+  getDocument,
+  deleteDocument,
+  updateDocument,
+  uploadImage,
+} from "@/api/doc";
 import { ElMessage } from "element-plus";
 
 const documentStore = useDocumentStore();
@@ -56,15 +60,32 @@ const extensions = [
   Italic,
   Underline,
   Strike,
-  BulletList,
-  OrderedList,
-  TaskList,
+  List,
   Blockquote,
   HorizontalRule,
   CodeBlock,
   Image.configure({
-    uploadUrl: import.meta.env.VITE_IMAGE_URL,
+    uploadHandler: (file) => {
+      const formData = new FormData();
+      formData.append("type", file.type);
+      formData.append("file", file);
+      console.log("formData:");
+      for (let [k, v] of formData.entries()) {
+        console.log(k, v);
+      }
+      return uploadImage(formData)
+        .then((res) => {
+          return {
+            url: res.data.url,
+          };
+        })
+        .catch((err) => {
+          ElMessage.error(err.message);
+          return Promise.reject(err);
+        });
+    },
   }),
+  Table,
 ];
 
 const logo = ref("");

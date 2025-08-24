@@ -21,13 +21,11 @@ export const updateDocument = (data) => {
 };
 
 // 删除文档
-export const deleteDocument = (params) => {
+export const deleteDocument = (data) => {
     return request({
         url: '/doc/deleteDocument',
         method: 'post',
-        params: {
-            ...params
-        }
+        data: data
     });
 };
 
@@ -39,5 +37,15 @@ export const getDocument = (params) => {
         params: {
             ...params
         }
+    });
+};
+
+// 上传图片
+export const uploadImage = (data) => {
+    return request({
+        url: '/doc/uploadImg',
+        headers: { 'Content-Type': 'multipart/form-data' },
+        method: 'post',
+        data: data
     });
 };

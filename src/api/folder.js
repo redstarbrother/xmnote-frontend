@@ -28,3 +28,12 @@ export const updateFolder = (data) => {
         data: data
     });
 };
+
+// 删除目录
+export const deleteFolder = (data) => {
+    return request({
+        url: '/folder/deleteFolder',
+        method: 'post',
+        data: data
+    });
+};

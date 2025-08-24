@@ -73,6 +73,12 @@
         >
           <el-icon><EditPen /></el-icon> 重命名
         </div>
+        <div
+          class="popover-menu-item"
+          @click="onPopoverSelect($event, 'delete')"
+        >
+          <el-icon><Delete color="#F56C6C" /></el-icon> 删除
+        </div>
       </div>
     </div>
     <div v-if="expanded">
@@ -86,10 +92,12 @@ import { NodeType } from "@/enums/NodeType";
 import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
 import { useDocumentStore } from "@/stores/documentStore";
 import { ArrowDownBold, ArrowLeftBold } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
 import { onClickOutside } from "@vueuse/core";
 import { createFolder, updateFolder } from "@/api/folder";
 import { createDocument, updateDocument } from "@/api/doc";
+import { ElMessageBox, ElMessage } from 'element-plus';
+import { deleteDocument } from '@/api/doc';
+import { deleteFolder } from '@/api/folder'; // 需要你补充此接口
 
 const props = defineProps({
   item: {
@@ -147,14 +155,35 @@ onClickOutside(popoverMenuRef, () => {
   popoverMenuVisible.value = false;
 });
 
-const onPopoverSelect = (event, action) => {
+const onPopoverSelect = async (event, action) => {
   event.stopPropagation();
-  console.log("Selected:", action);
-  if (action === "rename") {
+  if (action === 'delete') {
+    try {
+      await ElMessageBox.confirm('确定删除该项吗？此操作不可撤销。', '删除确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      });
+      let response;
+      if (documentInfo.value.type === NodeType.FOLDER) {
+        response = await deleteFolder({ id: documentInfo.value.id });
+      } else {
+        response = await deleteDocument({ id: documentInfo.value.id });
+      }
+      if (response.code === 200) {
+        ElMessage({ message: '删除成功', type: 'success' });
+        // TODO: 更新界面，移除该节点
+      } else {
+        ElMessage({ message: '删除失败', type: 'error' });
+      }
+    } catch (error) {
+      // 取消删除或出错
+    }
+  } else if (action === 'rename') {
     onRename();
-  } else if (action === "addFolder") {
+  } else if (action === 'addFolder') {
     addTemporaryNode(NodeType.FOLDER);
-  } else if (action === "addDoc") {
+  } else if (action === 'addDoc') {
     addTemporaryNode(NodeType.DOCUMENT);
   }
   popoverMenuVisible.value = false;
