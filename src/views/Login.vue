@@ -47,11 +47,9 @@ const handleLogin = async () => {
       ElMessage.success("登录成功");
       localStorage.setItem('token', res.data.token);
       router.push("/note");
-    } else {
-      ElMessage.error(res.message);
     }
   } catch (error) {
-    ElMessage.error(error.message);
+    
   }
 };
 </script>

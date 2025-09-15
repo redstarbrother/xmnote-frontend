@@ -9,15 +9,7 @@
       />
     </div>
     <div class="content-editor">
-      <XmEditor
-        :extensions="extensions"
-        :showToolbar="false"
-        :backgroundColorOnFocus="'#ffffff'"
-        :placeholder="sourceContent"
-        :showBorder="false"
-        :height="'100%'"
-        :onUpdate="handleEditorChange"
-      />
+      <XmEditor v-bind="editorProps" v-model:content="content"/>
     </div>
     <div class="content-footer">
       <Footer />
@@ -88,6 +80,16 @@ const extensions = [
   Table,
 ];
 
+const editorProps = computed(() => ({
+  extensions,
+  fixedMenuEnabled: false,
+  backgroundColorOnFocus: "#ffffff",
+  placeholder: "",
+  showBorder: false,
+  height: "100%",
+  onUpdate: handleEditorChange,
+}));
+
 const logo = ref("");
 const title = ref("");
 const content = ref({});
@@ -101,7 +103,7 @@ const handleEnterTitle = () => {
 
 // 内容修改回调方法
 const handleEditorChange = ({ editor }) => {
-  content.value = editor.getJSON();
+  // content.value = editor.getJSON();
   console.log(content.value);
 };
 
@@ -160,7 +162,6 @@ watch(
       logo.value = response.data.logo;
       content.value = sourceContent.value;
     }
-
     await nextTick();
   },
   { immediate: true }
@@ -176,7 +177,7 @@ watch(
   align-items: center;
 
   .content-title {
-    width: 80%;
+    width: 50%;
     height: 60px; // 固定高度
     flex-shrink: 0;
 
@@ -195,7 +196,7 @@ watch(
   }
 
   .content-editor {
-    width: 80%;
+    width: 50%;
     flex: 1;
     overflow: auto;
   }

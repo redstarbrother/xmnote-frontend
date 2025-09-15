@@ -36,8 +36,8 @@ importers:
         specifier: ^4.4.5
         version: 4.5.0(vue@3.5.13)
       xm-editor:
-        specifier: link:C:/Users/jhx24/AppData/Local/pnpm/global/5/node_modules/xm-editor
-        version: link:C:/Users/jhx24/AppData/Local/pnpm/global/5/node_modules/xm-editor
+        specifier: link:E:/Develop/Project/xm-editor
+        version: link:../../xm-editor
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
