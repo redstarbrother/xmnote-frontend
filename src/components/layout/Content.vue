@@ -1,6 +1,7 @@
 <template>
   <div class="content-container">
     <div class="content-title">
+      <div class="logo">{{logo}}</div>
       <input
         class="content-title-input"
         v-model="title"
@@ -175,11 +176,41 @@ watch(
   height: 100%;
   width: 100%;
   align-items: center;
+  overflow: auto; // 使容器可滚动
 
   .content-title {
     width: 50%;
     height: 60px; // 固定高度
     flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    position: sticky; // 吸顶效果
+    top: 0; 
+    background-color: #fff;
+    z-index: 10;
+    padding: 2px;
+    
+    // 添加底部渐变阴影效果
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 10px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 1), transparent);
+      pointer-events: none; // 确保不会影响鼠标事件
+    }
+    .logo {
+      padding: 0;
+      font-size: 3rem;
+      font-weight: 600;
+      color: #000000;
+      cursor: pointer;
+      &:hover {
+        background-color: rgba(55, 53, 47, 0.06);
+      }
+    }
 
     .content-title-input {
       width: 100%;
@@ -198,7 +229,7 @@ watch(
   .content-editor {
     width: 50%;
     flex: 1;
-    overflow: auto;
+    overflow: visible; // 修改为visible，防止内部出现滚动条
   }
 
   .content-footer {

@@ -35,7 +35,7 @@ import Footer from '@/components/layout/Footer.vue';
   }
 
   .el-main {
-    padding: 0;
+    padding: 4vh 2vw 0 2vw;
     overflow: hidden;
     flex: 1;
     display: flex;
