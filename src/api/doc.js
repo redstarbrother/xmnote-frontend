@@ -5,9 +5,10 @@ export const createDocument = (params) => {
     return request({
         url: '/doc/createDocument',
         method: 'post',
-        params: {
-            ...params
-        }
+        // params: {
+        //     ...params
+        // }
+        data: params
     });
 };
 
