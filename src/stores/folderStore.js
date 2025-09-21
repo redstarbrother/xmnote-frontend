@@ -15,6 +15,14 @@ export const useFolderStore = defineStore("folder", () => {
     return domainList.value;
   }
 
+  function removeDoc(docId) {
+    for (let domain of domainList.value) {
+      if (domain.nodeList) {
+        domain.nodeList = domain.nodeList.filter((item) => item.id !== docId);
+      }
+    }
+  }
+
   function addFolder(domainId, node) {
     let domain = domainList.value.find((item) => item.domainId === domainId);
     if (domain) {
@@ -25,5 +33,5 @@ export const useFolderStore = defineStore("folder", () => {
     }
   }
 
-  return { setDomainList, getDomainList, addFolder };
+  return { setDomainList, getDomainList, addFolder, removeDoc };
 });

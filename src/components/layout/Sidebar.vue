@@ -12,7 +12,7 @@
       <div class="domain-area">
         <div
           class="domain-item"
-          v-for="domain in folderStore.getDomainList()"
+          v-for="domain in domainList"
           :key="domain.domainName"
         >
           <div class="domain-item-content">
@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { NodeType } from "@/enums/NodeType";
 import NoteItem from "@/components/common/sidebar/NodeItem.vue";
 import UserArea from "@/components/common/sidebar/UserArea.vue";
@@ -54,6 +54,7 @@ import { getUserIdFromToken } from "@/utils/jwtUtil";
 const searchContent = ref("");
 const breadcrumbStore = useBreadcrumbStore();
 const folderStore = useFolderStore();
+const domainList = computed(() => folderStore.getDomainList());
 
 onMounted(() => {
   initDomainList();

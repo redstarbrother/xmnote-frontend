@@ -98,6 +98,7 @@ import { createDocument, updateDocument } from "@/api/doc";
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { deleteDocument } from '@/api/doc';
 import { deleteFolder } from '@/api/folder'; // 需要你补充此接口
+import { useFolderStore } from '@/stores/folderStore';
 
 const props = defineProps({
   item: {
@@ -114,6 +115,7 @@ const popoverMenuVisible = ref(false);
 // 绑定气泡菜单的位置元素
 const popoverMenuPosition = ref({ top: 0, left: 0 });
 const popoverMenuRef = ref(null);
+const folderStore = useFolderStore();
 const triggerBtn = ref(null); // 用于绑定“...”按钮元素
 // 文档store
 const documentStore = useDocumentStore();
@@ -171,13 +173,16 @@ const onPopoverSelect = async (event, action) => {
         response = await deleteDocument({ id: documentInfo.value.id });
       }
       if (response.code === 200) {
+        folderStore.removeDoc(documentInfo.value.id);
         ElMessage({ message: '删除成功', type: 'success' });
-        // TODO: 更新界面，移除该节点
       } else {
         ElMessage({ message: '删除失败', type: 'error' });
       }
     } catch (error) {
       // 取消删除或出错
+      ElMessage({ message: '删除失败', type: 'error' });
+      console.log('删除失败', error);
+      
     }
   } else if (action === 'rename') {
     onRename();
@@ -299,6 +304,8 @@ const saveNode = async () => {
       logo: documentInfo.value.logo,
     });
   } else {
+    console.log("新建文档", documentInfo.value);
+    
     response = await createDocument({
       title: documentInfo.value.title,
       folderId: documentInfo.value.parentId,
