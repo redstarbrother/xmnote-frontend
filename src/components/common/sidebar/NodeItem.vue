@@ -3,7 +3,7 @@
     <div
       class="item-container"
       @click="expandFolder"
-      :class="{ selected: documentInfo.id === documentStore.getDocumentId() }"
+      :class="{ selected: isSelected }"
     >
       <div class="item-info">
         <span
@@ -14,7 +14,7 @@
         <span
           v-if="!isRenaming"
           class="truncate"
-          :class="{ file: documentInfo.type === NodeType.FOLDER }"
+          :class="{ file: isFolder }"
         >
           {{ documentInfo.title }}
         </span>
@@ -29,56 +29,39 @@
         />
       </div>
       <div class="item-option">
-        <span class="option-more" @click="showPopoverMenu($event)">
-          <el-icon>
-            <MoreFilled color="#868684" />
-          </el-icon>
-        </span>
+        <!-- 使用 Element Plus 下拉菜单替代手写气泡 -->
+        <el-dropdown @command="onCommand" trigger="click">
+          <span class="option-more">
+            <el-icon>
+              <MoreFilled color="#868684" />
+            </el-icon>
+          </span>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item v-if="isFolder" command="addFolder">
+                <el-icon><Folder /></el-icon> 新增目录
+              </el-dropdown-item>
+              <el-dropdown-item v-if="isFolder" command="addDoc">
+                <el-icon><Document /></el-icon> 新增文档
+              </el-dropdown-item>
+              <el-dropdown-item command="rename">
+                <el-icon><EditPen /></el-icon> 重命名
+              </el-dropdown-item>
+              <el-dropdown-item command="delete">
+                <el-icon><Delete color="#F56C6C" /></el-icon> 删除
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
         <span
           class="option-switch"
-          v-if="documentInfo.type === NodeType.FOLDER"
+          v-if="isFolder"
         >
           <el-icon>
             <ArrowDownBold color="#868684" v-if="expanded" />
             <ArrowLeftBold color="#868684" v-else />
           </el-icon>
         </span>
-      </div>
-      <div
-        v-if="popoverMenuVisible"
-        class="popover-menu"
-        ref="popoverMenuRef"
-        :style="{
-          top: `${popoverMenuPosition.top}px`,
-          left: `${popoverMenuPosition.left}px`,
-        }"
-      >
-        <div
-          class="popover-menu-item"
-          v-if="documentInfo.type === NodeType.FOLDER"
-          @click="onPopoverSelect($event, 'addFolder')"
-        >
-          <el-icon><Folder /></el-icon> 新增目录
-        </div>
-        <div
-          class="popover-menu-item"
-          v-if="documentInfo.type === NodeType.FOLDER"
-          @click="onPopoverSelect($event, 'addDoc')"
-        >
-          <el-icon><Document /></el-icon> 新增文档
-        </div>
-        <div
-          class="popover-menu-item"
-          @click="onPopoverSelect($event, 'rename')"
-        >
-          <el-icon><EditPen /></el-icon> 重命名
-        </div>
-        <div
-          class="popover-menu-item"
-          @click="onPopoverSelect($event, 'delete')"
-        >
-          <el-icon><Delete color="#F56C6C" /></el-icon> 删除
-        </div>
       </div>
     </div>
     <div v-if="expanded">
@@ -89,15 +72,12 @@
 
 <script setup>
 import { NodeType } from "@/enums/NodeType";
-import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
+import { ref, onMounted, nextTick, computed } from "vue";
 import { useDocumentStore } from "@/stores/documentStore";
 import { ArrowDownBold, ArrowLeftBold } from "@element-plus/icons-vue";
-import { onClickOutside } from "@vueuse/core";
-import { createFolder, updateFolder } from "@/api/folder";
-import { createDocument, updateDocument } from "@/api/doc";
+import { createFolder, updateFolder, deleteFolder } from "@/api/folder";
+import { createDocument, updateDocument, deleteDocument } from "@/api/doc";
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { deleteDocument } from '@/api/doc';
-import { deleteFolder } from '@/api/folder'; // 需要你补充此接口
 import { useFolderStore } from '@/stores/folderStore';
 
 const props = defineProps({
@@ -107,18 +87,17 @@ const props = defineProps({
   },
 });
 
+const folderStore = useFolderStore();
+const documentStore = useDocumentStore();
+
 // 展开状态
 const expanded = ref(false);
 const documentInfo = ref(props.item);
-// 气泡菜单是否可见
-const popoverMenuVisible = ref(false);
-// 绑定气泡菜单的位置元素
-const popoverMenuPosition = ref({ top: 0, left: 0 });
-const popoverMenuRef = ref(null);
-const folderStore = useFolderStore();
-const triggerBtn = ref(null); // 用于绑定“...”按钮元素
-// 文档store
-const documentStore = useDocumentStore();
+
+// 计算属性：减少模板判断
+const isFolder = computed(() => documentInfo.value.type === NodeType.FOLDER);
+const isSelected = computed(() => documentInfo.value.id === documentStore.getDocumentId());
+
 // 重命名状态
 const isRenaming = ref(false);
 const editTitle = ref(documentInfo.value.title);
@@ -126,39 +105,18 @@ const inputRef = ref(null);
 
 // 展开目录
 const expandFolder = (event) => {
-  // 如果点击的是 .option-more 或其子元素，则不触发展开
-  if (event.target.closest(".option-more")) {
-    return;
-  }
-  console.log("run expand dir");
-  console.log("type: ", documentInfo.value.type);
+  // 避免点击“更多”触发展开
+  if (event.target.closest(".option-more")) return;
 
-  if (documentInfo.value.type === NodeType.FOLDER) {
+  if (isFolder.value) {
     expanded.value = !expanded.value;
-  } else if (documentInfo.value.type === NodeType.DOCUMENT) {
-    // 打开笔记
-    console.log("打开笔记");
+  } else {
     documentStore.setDocument(documentInfo.value);
   }
 };
 
-const showPopoverMenu = (event) => {
-  event.stopPropagation();
-  const rect = event.currentTarget.getBoundingClientRect();
-  popoverMenuPosition.value = {
-    top: rect.bottom + 6 + window.scrollY,
-    left: rect.left + window.scrollX,
-  };
-  popoverMenuVisible.value = true;
-};
-
-// 使用 VueUse 监听点击外部关闭菜单
-onClickOutside(popoverMenuRef, () => {
-  popoverMenuVisible.value = false;
-});
-
-const onPopoverSelect = async (event, action) => {
-  event.stopPropagation();
+// 下拉菜单命令统一处理
+const onCommand = async (action) => {
   if (action === 'delete') {
     try {
       await ElMessageBox.confirm('确定删除该项吗？此操作不可撤销。', '删除确认', {
@@ -166,60 +124,40 @@ const onPopoverSelect = async (event, action) => {
         cancelButtonText: '取消',
         type: 'warning',
       });
-      let response;
-      if (documentInfo.value.type === NodeType.FOLDER) {
-        response = await deleteFolder({ id: documentInfo.value.id });
-      } else {
-        response = await deleteDocument({ id: documentInfo.value.id });
-      }
+      const api = isFolder.value ? deleteFolder : deleteDocument;
+      const response = await api({ id: documentInfo.value.id });
       if (response.code === 200) {
-        folderStore.removeDoc(documentInfo.value.id);
+        folderStore.deleteNode(documentInfo.value.id);
         ElMessage({ message: '删除成功', type: 'success' });
       } else {
         ElMessage({ message: '删除失败', type: 'error' });
       }
     } catch (error) {
-      // 取消删除或出错
       ElMessage({ message: '删除失败', type: 'error' });
       console.log('删除失败', error);
-      
     }
   } else if (action === 'rename') {
     onRename();
   } else if (action === 'addFolder') {
-    addTemporaryNode(NodeType.FOLDER);
+    addChildNode(NodeType.FOLDER);
   } else if (action === 'addDoc') {
-    addTemporaryNode(NodeType.DOCUMENT);
+    addChildNode(NodeType.DOCUMENT);
   }
-  popoverMenuVisible.value = false;
 };
 
 // 重命名
 const onRename = () => {
   editTitle.value = documentInfo.value.title;
   isRenaming.value = true;
-  nextTick(() => {
-    inputRef.value?.focus();
-  });
+  nextTick(() => inputRef.value?.focus());
 };
 
-const confirmRename = () => {
-  if(!isRenaming.value) {
-    return;
-  }
-  if (editTitle.value.trim() !== "") {
-    documentInfo.value.title = editTitle.value.trim();
-    // 如果需要调用 API 同步保存，建议在这里加
-    if (documentInfo.value.isTemp && documentInfo.value.isTemp == true) {
-      // 新增node
-      saveNode();
-      documentInfo.value.isTemp = false;
-    } else {
-      // 更新node
-      console.log("更新node");
-      
-      updateNode();
-    }
+const confirmRename = async () => {
+  if (!isRenaming.value) return;
+  const newTitle = editTitle.value.trim();
+  if (newTitle !== "") {
+    documentInfo.value.title = newTitle;
+    await persistRename();
   }
   isRenaming.value = false;
 };
@@ -229,143 +167,87 @@ const cancelRename = () => {
   editTitle.value = documentInfo.value.title;
 };
 
-// 新建目录/文档
-const addTemporaryNode = (type) => {
-  let newNode = undefined;
+// 合并新增临时节点逻辑
+const addChildNode = (type) => {
+  const logo = type === NodeType.FOLDER ? "📂" : "📝";
+  const newItem = {
+    id: `tmp_${Date.now()}`,
+    title: type === NodeType.FOLDER ? "新建文件夹" : "新建文档",
+    type,
+    logo,
+    depth: (documentInfo.value.depth || 0) + 1,
+    parentId: documentInfo.value.id,
+    domainId: documentInfo.value.domainId,
+    child: [],
+    isTemp: true,
+  };
+  // 本地插入，立即更新可见的子节点列表
   if (!Array.isArray(documentInfo.value.child)) {
     documentInfo.value.child = [];
   }
-  if (type === NodeType.FOLDER) {
-    newNode = addFolderNode();
-  } else {
-    newNode = addNoteNode();
-  }
-  if (newNode) {
-    documentInfo.value.child.push(newNode);
-    expanded.value = true;
-  }
-};
-
-const addFolderNode = () => {
-  console.log("新建目录");
-  const newItem = {
-    id: `tmp_${Date.now()}`,
-    title: "新建文件夹",
-    type: NodeType.FOLDER,
-    logo: "📂",
-    depth: documentInfo.value.depth + 1,
-    parentId: documentInfo.value.id,
-    domainId: documentInfo.value.domainId,
-    child: [],
-    isTemp: true, // 用于标记是否为临时项
-  };
-  return newItem;
-};
-
-const addNoteNode = () => {
-  console.log("新建文档");
-  const newItem = {
-    id: `tmp_${Date.now()}`,
-    title: "新建文档",
-    type: NodeType.DOCUMENT,
-    logo: "📝",
-    depth: documentInfo.value.depth + 1,
-    parentId: documentInfo.value.id,
-    domainId: documentInfo.value.domainId,
-    child: [],
-    isTemp: true, // 用于标记是否为临时项
-  };
-  return newItem;
+  documentInfo.value.child.push(newItem);
+  // 同步到 Store，保持全局一致
+  folderStore.addNode(newItem);
+  // 展开当前节点以显示刚添加的子项
+  expanded.value = true;
 };
 
 onMounted(() => {
-  // 如果是临时项，则说明为新增node
   if (documentInfo.value.isTemp) {
     onRename();
   }
 });
 
-const saveNode = async () => {
-  // 新增node
-  let response = undefined;
-  const successMsg =
-    documentInfo.value.type === NodeType.FOLDER
-      ? "新建目录成功"
-      : "新建文档成功";
-  const failMsg =
-    documentInfo.value.type === NodeType.FOLDER
-      ? "新建目录失败"
-      : "新建文档失败";
-  if (documentInfo.value.type === NodeType.FOLDER) {
-    response = await createFolder({
-      title: documentInfo.value.title,
-      parentId: documentInfo.value.parentId,
-      domainId: documentInfo.value.domainId,
-      logo: documentInfo.value.logo,
-    });
-  } else {
-    console.log("新建文档", documentInfo.value);
-    
-    response = await createDocument({
-      title: documentInfo.value.title,
-      folderId: documentInfo.value.parentId,
-      logo: documentInfo.value.logo,
-      content: "",
-      domainId: documentInfo.value.domainId,
-    });
-  }
-  if (response.code === 200) {
-    ElMessage({
-      message: successMsg,
-      type: "success",
-    });
-    documentInfo.value.id = response.data.id;
-  } else {
-    ElMessage({
-      message: failMsg,
-      type: "error",
-    });
-  }
-};
+// 新增/更新统一持久化
+const persistRename = async () => {
+  let response;
+  const isFolderNode = isFolder.value;
+  const successMsg = isFolderNode ? "目录保存成功" : "文档保存成功";
+  const failMsg = isFolderNode ? "目录保存失败" : "文档保存失败";
 
-const updateNode = async () => {
-  // 更新node
-  let response = undefined;
-  const successMsg =
-    documentInfo.value.type === NodeType.FOLDER
-      ? "更新目录成功"
-      : "更新文档成功";
-  const failMsg =
-    documentInfo.value.type === NodeType.FOLDER
-      ? "更新目录失败"
-      : "更新文档失败";
-  if (documentInfo.value.type === NodeType.FOLDER) {
-    response = await updateFolder({
-      id: documentInfo.value.id,
-      title: documentInfo.value.title,
-      parentId: documentInfo.value.parentId,
-      domainId: documentInfo.value.domainId,
-      logo: documentInfo.value.logo,
-    });
+  if (documentInfo.value.isTemp) {
+    // 新增
+    response = isFolderNode
+      ? await createFolder({
+          title: documentInfo.value.title,
+          parentId: documentInfo.value.parentId,
+          domainId: documentInfo.value.domainId,
+          logo: documentInfo.value.logo,
+        })
+      : await createDocument({
+          title: documentInfo.value.title,
+          folderId: documentInfo.value.parentId,
+          logo: documentInfo.value.logo,
+          content: "",
+          domainId: documentInfo.value.domainId,
+        });
+    if (response.code === 200) {
+      documentInfo.value.id = response.data.id;
+      documentInfo.value.isTemp = false;
+    }
   } else {
-    response = await updateDocument({
-      id: documentInfo.value.id,
-      title: documentInfo.value.title,
-      folderId: documentInfo.value.parentId,
-      logo: documentInfo.value.logo,
-      content: null,
-    });
+    // 更新
+    response = isFolderNode
+      ? await updateFolder({
+          id: documentInfo.value.id,
+          title: documentInfo.value.title,
+          parentId: documentInfo.value.parentId,
+          domainId: documentInfo.value.domainId,
+          logo: documentInfo.value.logo,
+        })
+      : await updateDocument({
+          id: documentInfo.value.id,
+          title: documentInfo.value.title,
+          folderId: documentInfo.value.parentId,
+          logo: documentInfo.value.logo,
+          domainId: documentInfo.value.domainId,
+        });
   }
-  if (response.code === 200) {
-    ElMessage({
-      message: successMsg,
-      type: "success",
-    });
+
+  if (response?.code === 200) {
+    ElMessage({ message: successMsg, type: "success" });
   } else {
-    ElMessage({
-      message: failMsg,
-      type: "error",
-    });
+    ElMessage({ message: failMsg, type: "error" });
   }
 };
 </script>

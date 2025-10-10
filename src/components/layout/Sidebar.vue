@@ -41,59 +41,22 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from "vue";
+import { ref, computed } from "vue";
 import { NodeType } from "@/enums/NodeType";
 import NoteItem from "@/components/common/sidebar/NodeItem.vue";
 import UserArea from "@/components/common/sidebar/UserArea.vue";
-import { useBreadcrumbStore } from "@/stores/breadcrumbStore";
 import { useFolderStore } from "@/stores/folderStore";
-import { Search } from "@element-plus/icons-vue";
-import { getDirInfo } from "@/api/folder";
-import { getUserIdFromToken } from "@/utils/jwtUtil";
+import { Search, Plus } from "@element-plus/icons-vue";
 
 const searchContent = ref("");
-const breadcrumbStore = useBreadcrumbStore();
 const folderStore = useFolderStore();
-const domainList = computed(() => folderStore.getDomainList());
 
-onMounted(() => {
-  initDomainList();
-  // 初始化面包屑store的notes数据
-  breadcrumbStore.setFlatNotes(folderStore.getDomainList());
-});
+// 使用派生树视图
+const domainList = computed(() => folderStore.getDomainTrees());
 
-// 测试数据
-let format = [
-  {
-    domainName: "笔记",
-    documents: [
-      {
-        id: "J6G4FU0FDS6AJGFR877EJ7F43SCFG123",
-        title: "工作笔记",
-        logo: "📂",
-        type: "folder",
-        depth: 0,
-        parentId: null,
-        child: [],
-      },
-    ],
-  },
-];
-
-// 笔记目录列表初始化
-async function initDomainList() {
-  const userId = getUserIdFromToken();
-  if (!userId) {
-    console.error("User ID not found in token");
-    return;
-  }
-  let response = await getDirInfo({ userId: userId });
-  folderStore.setDomainList(response.data.domainFolderTreeList);
-}
-
-// 新增文件夹
+// 新增文件夹（域根）
 const addFolder = (domainId) => {
-    const newItem = {
+  const newItem = {
     id: `tmp_${Date.now()}`,
     title: "新建文件夹",
     type: NodeType.FOLDER,
@@ -102,7 +65,7 @@ const addFolder = (domainId) => {
     parentId: null,
     domainId: domainId,
     child: [],
-    isTemp: true, // 用于标记是否为临时项
+    isTemp: true,
   };
   folderStore.addFolder(domainId, newItem);
 };
