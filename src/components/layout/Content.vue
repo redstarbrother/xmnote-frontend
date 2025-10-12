@@ -1,5 +1,6 @@
 <template>
-  <div class="content-container">
+  <ContentWelcome v-if="!documentId" />
+  <div v-else class="content-container">
     <div class="content-title">
       <div class="logo">{{logo}}</div>
       <input
@@ -21,6 +22,7 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from "vue";
 import XmEditor from "xm-editor";
+import ContentWelcome from "@/components/welcome/ContentWelcome.vue";
 import {
   Heading,
   Bold,
