@@ -1,7 +1,6 @@
 <template>
     <div class="breadcrumb-container">
         <el-breadcrumb separator="/">
-            <el-breadcrumb-item >笔记</el-breadcrumb-item>
             <el-breadcrumb-item v-for="item in breadcrumbPath" :key="item.id">
                 {{ item.title }}
             </el-breadcrumb-item>
@@ -11,14 +10,16 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useBreadcrumbStore } from '@/stores/breadcrumbStore'
+import { useDocumentStore } from '@/stores/documentStore'
+import { useFolderStore } from '@/stores/folderStore'
 
-const breadcrumbStore = useBreadcrumbStore()
+const documentStore = useDocumentStore()
+const folderStore = useFolderStore()
 
 // 计算面包屑路径
 const breadcrumbPath = computed(() => {
-    const currentId = breadcrumbStore.currentNoteId
-    const notes = breadcrumbStore.flatNotes
+    const currentId = documentStore.getDocumentId()
+    const notes = folderStore.getFlatNotes()
     
     if (!currentId || !notes || notes.length === 0) return []
 
