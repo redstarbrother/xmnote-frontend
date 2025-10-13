@@ -65,7 +65,14 @@
       </div>
     </div>
     <div v-if="expanded">
-      <NodeItem v-for="child in item.child" :key="child.id" :item="child" />
+      <NodeItem 
+        v-for="child in item.child" 
+        :key="child.id" 
+        :item="{
+          ...child,
+          depth: (documentInfo.depth || 0) + 1
+        }" 
+      />
     </div>
   </div>
 </template>

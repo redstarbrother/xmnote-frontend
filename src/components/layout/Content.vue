@@ -171,7 +171,22 @@ watch(
 );
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
+.content-container::-webkit-scrollbar {
+  width: 8px !important;
+  background-color: transparent !important;
+}
+
+.content-container::-webkit-scrollbar-thumb {
+  background-color: #D3D1CB !important;
+  border-radius: 4px !important;
+  border: none !important; 
+}
+
+.content-container::-webkit-scrollbar-track {
+  background-color: transparent !important;
+}
+
 .content-container {
   display: flex;
   flex-direction: column;
