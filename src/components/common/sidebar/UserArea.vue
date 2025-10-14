@@ -19,37 +19,44 @@
       <el-button link type="primary" class="option-btn" @click="openSettings">⚙️ 设置</el-button>
     </div>
   </div>
+
+  <!-- 引入设置组件 -->
+  <UserSettings ref="userSettingsRef" />
+      
 </template>
 
 <script setup>
-import { ref, reactive, computed } from "vue";
-import { useUserStore } from "@/stores/userStore"; // 假设有一个用户状态管理
+import { ref, computed } from "vue";
+import { useUserStore } from "@/stores/userStore";
+import { ElMessage } from "element-plus";
+import UserSettings from "@/components/common/settings/UserSettings.vue";
 
-// 从状态管理获取用户信息
+// 用户信息
 const userStore = useUserStore();
-const userInfo = reactive({
-  username: computed(() => userStore.username || "未登录用户"),
-  avatarUrl: computed(() => userStore.avatarUrl || "https://avatars.githubusercontent.com/u/45450994?v=4&size=64"),
-  serverAddress: computed(() => userStore.serverAddress || "localhost")
-});
+const userInfo = computed(() => userStore.userInfo);
 
 // 文档统计信息
-const showDocInfo = ref(true); // 控制是否显示文档信息区域
-const docStats = reactive({
-  noteCount: 23,
-  wordCount: 65842,
-  bookmarkCount: 18
+const showDocInfo = ref(true);
+const docStats = ref({
+  noteCount: 42,
+  wordCount: 12345,
+  bookmarkCount: 7
 });
 
-// 功能按钮事件处理
-const showStats = () => {
-  // 实现显示统计数据的逻辑
-  console.log("显示统计数据");
+// 用户设置组件引用
+const userSettingsRef = ref(null);
+
+// 打开设置弹出框
+const openSettings = () => {
+  userSettingsRef.value.open();
 };
 
-const openSettings = () => {
-  // 实现打开设置的逻辑
-  console.log("打开设置");
+// 显示统计信息
+const showStats = () => {
+  ElMessage({
+    message: '统计功能正在开发中...',
+    type: 'info'
+  });
 };
 </script>
 
@@ -60,6 +67,14 @@ const openSettings = () => {
   --text-secondary: #999;
   --spacing-sm: 5px;
   --spacing-md: 10px;
+}
+
+// 设置弹出框样式
+:deep(.settings-dialog) {
+  .el-dialog__body {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
 }
 
 .user-container {
