@@ -80,7 +80,8 @@ const addFolderNode = () => {
 <style scoped lang="scss">
 .sidebar-container {
   width: 100%;
-  height: 100vh;
+  height: 100vh; // 固定侧边栏高度为视口高度
+  overflow: hidden; // 外层不出现滚动条
   padding: 10px;
   box-sizing: border-box;
   background-color: #f8f8f7;
@@ -89,16 +90,29 @@ const addFolderNode = () => {
   justify-content: space-between;
 
   .main-content {
-    flex-grow: 1;
+    flex: 1;
+    min-height: 0; // 允许子元素在 flex 容器内正确溢出
+    overflow: auto; // 仅中间区域可滚动
+    scrollbar-width: none; // Firefox 隐藏滚动条
+    -ms-overflow-style: none; // IE/Edge 隐藏滚动条
+
+    // WebKit 隐藏滚动条
+    &::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
     .search-area {
-      margin-bottom: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background-color: #f8f8f7;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
     }
 
     .domain-area {
-      max-height: 80vh;
-      overflow: auto;
-      scrollbar-width: none; // Firefox 隐藏滚动条
-      -ms-overflow-style: none; // IE/Edge 隐藏滚动条
+      // 使用父容器滚动，避免自身滚动条
 
       .domain-item-content {
         display: flex;
@@ -124,24 +138,6 @@ const addFolderNode = () => {
         }
       }
 
-      // &::-webkit-scrollbar {
-      //   width: 8px;
-      //   height: 8px;
-      //   background: transparent;
-      //   opacity: 0; // 初始隐藏
-      //   transition: opacity 0.3s;
-      // }
-
-      // &::-webkit-scrollbar-thumb {
-      //   background-color: rgba(0, 0, 0, 0.3);
-      //   border-radius: 4px;
-      // }
-
-      // &:hover {
-      //   &::-webkit-scrollbar {
-      //     opacity: 1; // 鼠标悬停时显示滚动条
-      //   }
-      // }
     }
 
     .note-area {
@@ -165,8 +161,10 @@ const addFolderNode = () => {
   }
 
   .user-area {
-    padding-top: 20px;
+    padding-top: 5px;
     border-top: 1px solid #ddd;
+    background-color: #f8f8f7;
+    z-index: 1;
     // 用户区域样式
   }
 }

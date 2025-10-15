@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <el-container>
-      <el-aside width="15vw">
+      <el-aside width="15vw" height="100vh">
         <Sidebar />
       </el-aside>
       <el-container>
@@ -48,6 +48,11 @@ onMounted(async () => {
 
   .el-container {
     height: 100%;
+  }
+
+  .el-aside {
+    height: 100vh; // 固定侧边栏为视口高度
+    overflow: hidden; // 禁止外层滚动条出现
   }
 
   .el-main {
