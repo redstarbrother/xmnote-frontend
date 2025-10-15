@@ -16,7 +16,8 @@ import { ref } from "vue";
 export const useDocumentStore = defineStore("document", () => {
   const document = ref(null);
 
-  const saveStatus = ref(false); // false: 未保存, true: 已保存
+  // 保存状态：unsaved 未保存 | saving 保存中 | saved 已保存
+  const saveStatus = ref("saved");
 
   function setDocument(doc) {
     document.value = doc;

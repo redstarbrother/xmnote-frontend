@@ -124,6 +124,9 @@ onMounted(() => {
 const saveDocument = async () => {
   if (!documentId.value) return;
 
+  // 更新保存状态为保存中
+  documentStore.setSaveStatus("saving");
+
   const response = await updateDocument({
     id: documentId.value,
     title: title.value,
@@ -132,8 +135,11 @@ const saveDocument = async () => {
   });
   if (response.code !== 200) {
     ElMessage.error("内容保存失败");
+    // 保存失败维持未保存状态
+    documentStore.setSaveStatus("unsaved");
   } else {
     isChanged.value = false;
+    documentStore.setSaveStatus("saved");
   }
 };
 
@@ -142,6 +148,7 @@ watch(
   [logo, title, content],
   () => {
     isChanged.value = true;
+    documentStore.setSaveStatus("unsaved");
   },
   { deep: true }
 );
@@ -164,6 +171,8 @@ watch(
       sourceContent.value = JSON.parse(response.data.content);
       logo.value = response.data.logo;
       content.value = sourceContent.value;
+      // 切换文档后默认视为已保存
+      documentStore.setSaveStatus("saved");
     }
     await nextTick();
   },
