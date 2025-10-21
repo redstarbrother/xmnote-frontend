@@ -8,6 +8,10 @@
         <span class="user-name">{{ userInfo.username }}</span>
         <span class="server-addr">{{ userInfo.serverAddress }}</span>
       </div>
+      <!-- 新增：右侧注销按钮 -->
+      <div class="user-actions">
+        <el-button link type="danger" class="logout-btn" @click.stop="logout">注销</el-button>
+      </div>
     </div>
     <!-- <div v-if="showDocInfo" class="doc-info-area">
       <span class="count-info">📄 笔记：{{ docStats.noteCount }}</span>
@@ -28,12 +32,16 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useUserStore } from "@/stores/userStore";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { useRouter } from "vue-router";
 import UserSettings from "@/components/common/settings/UserSettings.vue";
 
 // 用户信息
 const userStore = useUserStore();
 const userInfo = computed(() => userStore.userInfo);
+
+// 路由
+const router = useRouter();
 
 // 文档统计信息
 const showDocInfo = ref(true);
@@ -57,6 +65,30 @@ const showStats = () => {
     message: '统计功能正在开发中...',
     type: 'info'
   });
+};
+
+// 注销逻辑
+const logout = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要注销并退出登录吗？',
+      '确认注销',
+      {
+        confirmButtonText: '注销',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    );
+    // 清除本地 token
+    localStorage.removeItem('token');
+    // 更新用户状态
+    userStore.logout();
+    // 成功提示并跳转登录
+    ElMessage({ message: '已注销并退出登录', type: 'success' });
+    router.push('/login');
+  } catch (e) {
+    // 用户取消
+  }
 };
 </script>
 
@@ -96,6 +128,15 @@ const showStats = () => {
       background-color: rgba(112, 108, 108, 0.10);
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(166, 166, 166, 0.1);
+
+      .user-actions {
+        opacity: 1;
+      }
+    }
+
+    .user-actions {
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
     .user-info-avatar {
@@ -109,6 +150,7 @@ const showStats = () => {
       flex-wrap: wrap;
       align-content: space-around;
       margin-left: 10px;
+      flex: 1; // 撑满剩余空间，右侧按钮靠右
       
       .user-name {
         width: 100%;
@@ -123,6 +165,16 @@ const showStats = () => {
         color: var(--text-secondary);
         font-size: 13px;
         margin-left: var(--spacing-md);
+      }
+    }
+
+    .user-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+
+      .logout-btn {
+        font-size: 14px;
       }
     }
   }
@@ -170,6 +222,11 @@ const showStats = () => {
         .user-name, .server-addr {
           margin-left: 0;
         }
+      }
+
+      .user-actions {
+        margin-left: 0;
+        margin-top: var(--spacing-sm);
       }
     }
   }
