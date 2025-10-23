@@ -12,6 +12,11 @@ const request = axios.create({
     }
 });
 
+export const setBaseUrl = (baseUrl) => {
+    console.log("setBaseUrl: " + baseUrl);
+    request.defaults.baseURL = baseUrl;
+};
+
 // 请求拦截器
 request.interceptors.request.use(
     config => {
