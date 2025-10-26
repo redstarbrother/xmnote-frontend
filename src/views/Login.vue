@@ -24,7 +24,6 @@
             placeholder="请输入密码"
             type="password"
             autocomplete="current-password"
-            @keyup.enter="handleLogin"
           />
         </div>
         <div class="form-item" v-if="isPrivateServer">
