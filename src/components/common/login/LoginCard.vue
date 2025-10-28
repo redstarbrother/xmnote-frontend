@@ -11,8 +11,8 @@
             <div v-if="activeTab === 'phone'" key="phone" class="login-card-content">
                 <div class="login-form">
                     <div class="form-group">
-                        <label for="username">手机号</label>
-                        <input type="text" id="username" name="username" placeholder="请输入手机号" required>
+                        <label for="phone">手机号</label>
+                        <input type="text" id="phone" name="phone" placeholder="请输入手机号" required>
                     </div>
                     <div class="form-group verification-group">
                         <label for="verification">验证码</label>
@@ -55,6 +55,23 @@
                     </div>
                     <div class="form-group">
                         <el-button type="primary">登录</el-button>
+                    </div>
+                    <div class="login-footer">
+                        <span>未注册手机验证后将自动注册，登录即代表你同意<a href="#">用户协议</a></span>
+                        <hr class="divider">
+                        <div class="social-login">
+                            <span>其他方式登录</span>
+                            <div class="social-container">
+                                <div class="sccial-item">
+                                    <img class="social-icon" src="@/assets/wechat.svg" alt="微信登录"></img>
+                                    <span>微信</span>
+                                </div>
+                                <div class="sccial-item">
+                                    <img class="social-icon" src="@/assets/cloud.svg" alt="私服登录"></img>
+                                    <span>私服</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -166,11 +183,13 @@ const switchTab = (tab) => {
                     border: 0;
                     border-top: 1px solid #cfcfcf;
                 }
+
                 .social-login {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     width: 100%;
+
                     span {
                         position: relative;
                         top: 1px;
@@ -178,11 +197,13 @@ const switchTab = (tab) => {
                         color: #8e8d8d;
                         text-align: center;
                     }
+
                     .social-container {
                         display: flex;
                         justify-content: center;
                         align-items: center;
                         gap: 10px;
+
                         .sccial-item {
                             display: flex;
                             // justify-content: center;
@@ -192,6 +213,7 @@ const switchTab = (tab) => {
                             padding: 4px 6px;
                             border-radius: 4px;
                             transition: transform 0.1s ease;
+
                             img {
                                 width: 16px;
                                 height: 16px;
@@ -232,6 +254,7 @@ const switchTab = (tab) => {
                 border: 1px solid #ddd;
                 border-radius: 4px;
                 font-size: 14px;
+                box-sizing: border-box;
                 transition: border-color 0.3s ease, box-shadow 0.3s ease;
 
                 &:focus {
