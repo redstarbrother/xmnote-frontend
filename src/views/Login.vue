@@ -1,26 +1,59 @@
 <template>
   <div class="login-root">
-    <div v-if="!isRegister" class="login-container">
-      <transition name="fade">
-        <div v-if="serverType === 'public'" class="container public-container">
-          <LoginCard />
-        </div>
-        <div v-else class="container private-container">
+    <transition name="fade">
+      <div v-if="!isRegister" class="login-container">
+        <LoginCard @login="handleLogin" v-model:isRegister="isRegister" />
+      </div>
+      <div v-else class="register-container">
+        <RegisterCard @register="handleRegister" v-model:isRegister="isRegister" />
+      </div>
+    </transition>
 
-        </div>
-      </transition>
-    </div>
-    <div v-else class="register-container">
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import LoginCard from '@/components/common/login/LoginCard.vue'
+import RegisterCard from '@/components/common/login/RegisterCard.vue'
+import { login } from '@/api/auth'
+import router from '@/router'
 
-const serverType = ref("public")
 const isRegister = ref(false)
+
+const handleLogin = (loginForm) => {
+  console.log(JSON.stringify(loginForm))
+  if (loginForm.isPrivate) {
+    // 检查私有服务器是否存在
+    if (!checkPrivateServer(loginForm.serverAddr)) {
+      // 私有服务器不存在，提示用户
+      ElMessage.error('私有服务器连接失败！')
+      return;
+    }
+    // TODO 修改request对象，重置baseURL
+  }
+  // 构建登录请求对象
+  var loginReq = {
+    principal: loginForm.principal,
+    credential: loginForm.credential,
+    loginType: loginForm.loginType.toUpperCase(),
+  }
+  login(loginReq).then(res => {
+    ElMessage.success('登录成功！')
+    // 登录成功，保存token
+    localStorage.setItem('token', res.data.token)
+    // 登录成功，跳转到首页
+    router.push({ name: 'note' })
+  }).catch(err => {
+    // 登录失败，提示用户
+    ElMessage.error(err.message || '登录失败')
+  })
+}
+
+const checkPrivateServer = (serverAddr) => {
+  // TODO 检查私有服务器是否存在
+  return true;
+}
 </script>
 
 <style lang="scss" scoped>

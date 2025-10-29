@@ -57,7 +57,7 @@ request.interceptors.response.use(
                     ElMessage.error('请求的资源不存在');
                     break;
                 case 500:
-                    ElMessage.error('服务器错误, ' + res.message);
+                    ElMessage.error(res.message);
                     break;
                 default:
                     ElMessage.error(res.message || '未知错误');
