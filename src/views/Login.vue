@@ -5,29 +5,31 @@
         <LoginCard @login="handleLogin" v-model:isRegister="isRegister" />
       </div>
       <div v-else class="register-container">
-        <RegisterCard @register="handleRegister" v-model:isRegister="isRegister" />
+        <RegisterCard
+          @register="handleRegister"
+          v-model:isRegister="isRegister"
+        />
       </div>
     </transition>
-
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import LoginCard from '@/components/common/login/LoginCard.vue'
-import RegisterCard from '@/components/common/login/RegisterCard.vue'
-import { login } from '@/api/auth'
-import router from '@/router'
+import { ref } from "vue";
+import LoginCard from "@/components/common/login/LoginCard.vue";
+import RegisterCard from "@/components/common/login/RegisterCard.vue";
+import { login } from "@/api/auth";
+import router from "@/router";
 
-const isRegister = ref(false)
+const isRegister = ref(false);
 
 const handleLogin = (loginForm) => {
-  console.log(JSON.stringify(loginForm))
+  console.log(JSON.stringify(loginForm));
   if (loginForm.isPrivate) {
     // 检查私有服务器是否存在
     if (!checkPrivateServer(loginForm.serverAddr)) {
       // 私有服务器不存在，提示用户
-      ElMessage.error('私有服务器连接失败！')
+      ElMessage.error("私有服务器连接失败！");
       return;
     }
     // TODO 修改request对象，重置baseURL
@@ -37,23 +39,20 @@ const handleLogin = (loginForm) => {
     principal: loginForm.principal,
     credential: loginForm.credential,
     loginType: loginForm.loginType.toUpperCase(),
-  }
-  login(loginReq).then(res => {
-    ElMessage.success('登录成功！')
+  };
+  login(loginReq).then((res) => {
+    ElMessage.success("登录成功！");
     // 登录成功，保存token
-    localStorage.setItem('token', res.data.token)
+    localStorage.setItem("token", res.data.token);
     // 登录成功，跳转到首页
-    router.push({ name: 'note' })
-  }).catch(err => {
-    // 登录失败，提示用户
-    ElMessage.error(err.message || '登录失败')
-  })
-}
+    router.push({ name: "note" });
+  });
+};
 
 const checkPrivateServer = (serverAddr) => {
   // TODO 检查私有服务器是否存在
   return true;
-}
+};
 </script>
 
 <style lang="scss" scoped>
