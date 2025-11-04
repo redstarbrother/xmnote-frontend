@@ -38,6 +38,7 @@ import {
 } from "@putanut/xm-editor";
 import "@putanut/xm-editor/xm-editor.css";
 import { useDocumentStore } from "@/stores/documentStore";
+import { useFolderStore } from "@/stores/folderStore";
 import {
   getDocument,
   deleteDocument,
@@ -48,6 +49,7 @@ import { ElMessage } from "element-plus";
 
 const documentStore = useDocumentStore();
 const documentId = computed(() => documentStore.getDocumentId());
+const folderStore = useFolderStore();
 
 const extensions = [
   Heading,
@@ -151,6 +153,18 @@ watch(
     documentStore.setSaveStatus("unsaved");
   },
   { deep: true }
+);
+
+// 当标题变化时，同步更新侧边栏与面包屑的标题
+watch(
+  title,
+  (newTitle) => {
+    console.log("newTitle: " + newTitle);
+    
+    const id = documentId.value;
+    if (!id) return;
+    folderStore.updateNode(id, { title: newTitle });
+  }
 );
 
 // 监听当前文档 ID 变化，自动加载内容

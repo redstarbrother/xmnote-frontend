@@ -79,7 +79,7 @@
 
 <script setup>
 import { NodeType } from "@/enums/NodeType";
-import { ref, onMounted, nextTick, computed } from "vue";
+import { ref, onMounted, nextTick, computed, watch } from "vue";
 import { useDocumentStore } from "@/stores/documentStore";
 import { ArrowDownBold, ArrowLeftBold } from "@element-plus/icons-vue";
 import { createFolder, updateFolder, deleteFolder } from "@/api/folder";
@@ -204,6 +204,19 @@ onMounted(() => {
     onRename();
   }
 });
+
+// 当父组件传入的 item 更新（例如标题在内容区修改并写入 store），同步到本地副本
+watch(
+  () => props.item,
+  (newItem) => {
+    documentInfo.value = newItem;
+    // 若当前正处于重命名输入框展示，保持输入值与新标题一致
+    if (!isRenaming.value) {
+      editTitle.value = newItem.title;
+    }
+  },
+  { deep: false }
+);
 
 // 新增/更新统一持久化
 const persistRename = async () => {

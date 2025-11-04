@@ -105,6 +105,15 @@ export const useFolderStore = defineStore("folder", () => {
     return path;
   }
 
+  // 更新节点的部分字段（如标题、logo 等），用于同步侧边栏和面包屑
+  // 注意：替换整个节点引用和容器引用，确保依赖此数据的 computed 重新计算
+  function updateNode(id, partial) {
+    const node = nodeById.value[id];
+    if (!node || !partial) return;
+    const updated = { ...node, ...partial };
+    nodeById.value = { ...nodeById.value, [id]: updated };
+  }
+
   // 兼容入口：新增文件夹（根或某父节点下）
   function addFolder(domainId, node) {
     if (!domainById.value[domainId]) {
@@ -205,6 +214,7 @@ export const useFolderStore = defineStore("folder", () => {
     getFlatNotes,
     findNode,
     getPathToNode,
+    updateNode,
     // 操作
     addFolder,
     addNode,
