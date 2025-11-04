@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "sit": "vite build --env-file .env.sit",
     "build": "vite build",
     "preview": "vite preview"
   },
