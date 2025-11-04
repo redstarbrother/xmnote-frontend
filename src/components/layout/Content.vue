@@ -21,7 +21,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from "vue";
-import XmEditor from "xm-editor";
+import XmEditor from "@putanut/xm-editor";
 import ContentWelcome from "@/components/welcome/ContentWelcome.vue";
 import {
   Heading,
@@ -35,8 +35,8 @@ import {
   CodeBlock,
   Image,
   Table,
-} from "xm-editor";
-import "xm-editor/xm-editor.css";
+} from "@putanut/xm-editor";
+import "@putanut/xm-editor/xm-editor.css";
 import { useDocumentStore } from "@/stores/documentStore";
 import {
   getDocument,
