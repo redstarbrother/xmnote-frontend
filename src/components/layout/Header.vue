@@ -3,7 +3,7 @@
     <div class="header-left">
       <Breadcrumb />
     </div>
-    <div class="header-right">
+    <div v-if="documentId" class="header-right">
       <div v-if="saveStatus === 'unsaved'" class="save-status unsaved">未保存</div>
       <div v-else-if="saveStatus === 'saving'" class="save-status saving">
         <el-icon class="is-loading saving-spinner" aria-label="保存中"><Loading /></el-icon>
@@ -22,6 +22,7 @@ import { useDocumentStore } from '@/stores/documentStore'
 
 const documentStore = useDocumentStore()
 const saveStatus = computed(() => documentStore.getSaveStatus())
+const documentId = computed(() => documentStore.getDocumentId())
 
 const handleShare = () => {
   ElMessage.info('分享功能未开放')

@@ -172,6 +172,16 @@ watch(
   documentId,
   async (id) => {
     if (!id) return;
+    if (typeof id === 'string' && id.startsWith('tmp_')) {
+      title.value = "新建文档";
+      logo.value = "📝";
+      content.value = {};
+      documentStore.setSaveStatus("unsaved");
+      return;
+    }
+    title.value = "";
+    logo.value = "📝";
+    content.value = {};
     // 从接口获取文档数据
     const response = await getDocument({
       documentId: id,
@@ -181,9 +191,16 @@ watch(
       ElMessage.error(response.message);
       return;
     } else {
-      title.value = response.data.title;
-      sourceContent.value = JSON.parse(response.data.content);
-      logo.value = response.data.logo;
+      title.value = response.data.title || "";
+      logo.value = response.data.logo || "📝";
+      let parsed = {};
+      try {
+        const raw = response.data.content;
+        parsed = raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        parsed = {};
+      }
+      sourceContent.value = parsed;
       content.value = sourceContent.value;
       // 切换文档后默认视为已保存
       documentStore.setSaveStatus("saved");

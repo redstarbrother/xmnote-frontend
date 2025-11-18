@@ -23,10 +23,12 @@ import Header from '@/components/layout/Header.vue';
 import Content from '@/components/layout/Content.vue';
 import Footer from '@/components/layout/Footer.vue';
 import { useFolderStore } from '@/stores/folderStore';
-import { getDirInfo } from '@/api/folder';
+import { useDomainStore } from '@/stores/domainStore';
+import { getDirInfo, getDomainTree } from '@/api/folder';
 import { getUserIdFromToken } from '@/utils/jwtUtil';
 
 const folderStore = useFolderStore();
+const domainStore = useDomainStore();
 
 onMounted(async () => {
   const userId = getUserIdFromToken();
@@ -36,6 +38,9 @@ onMounted(async () => {
   }
   const response = await getDirInfo({ userId });
   folderStore.setDomainList(response.data.domainFolderTreeList);
+  
+  const response2 = await getDomainTree({ userId });
+  domainStore.init(response2.data);
 });
 </script>
 

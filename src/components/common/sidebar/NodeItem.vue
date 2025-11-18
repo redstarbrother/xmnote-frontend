@@ -1,32 +1,13 @@
 <template>
   <div class="node-item">
-    <div
-      class="item-container"
-      @click="expandFolder"
-      :class="{ selected: isSelected }"
-    >
+    <div class="item-container" @click="expandFolder" :class="{ selected: isSelected }">
       <div class="item-info">
-        <span
-          class="item-info-logo"
-          :style="{ paddingLeft: `${(documentInfo.depth || 0) * 16}px` }"
-          >{{ item.logo }}</span
-        >
-        <span
-          v-if="!isRenaming"
-          class="truncate"
-          :class="{ file: isFolder }"
-        >
-          {{ documentInfo.title }}
+        <span class="item-info-logo" :style="{ paddingLeft: `${(nodeInfo.depth || 0) * 16}px` }">{{ item.logo }}</span>
+        <span v-if="!isRenaming" class="truncate" :class="{ file: isFolder }">
+          {{ nodeInfo.title }}
         </span>
-        <input
-          v-else
-          ref="inputRef"
-          v-model="editTitle"
-          class="rename-input"
-          @keydown.enter="confirmRename"
-          @blur="confirmRename"
-          @keydown.esc="cancelRename"
-        />
+        <input v-else ref="inputRef" v-model="editTitle" class="rename-input" @keydown.enter="confirmRename"
+          @blur="confirmRename" @keydown.esc="cancelRename" />
       </div>
       <div class="item-option">
         <!-- 使用 Element Plus 下拉菜单替代手写气泡 -->
@@ -39,24 +20,29 @@
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item v-if="isFolder" command="addFolder">
-                <el-icon><Folder /></el-icon> 新增目录
+                <el-icon>
+                  <Folder />
+                </el-icon> 新增目录
               </el-dropdown-item>
               <el-dropdown-item v-if="isFolder" command="addDoc">
-                <el-icon><Document /></el-icon> 新增文档
+                <el-icon>
+                  <Document />
+                </el-icon> 新增文档
               </el-dropdown-item>
               <el-dropdown-item command="rename">
-                <el-icon><EditPen /></el-icon> 重命名
+                <el-icon>
+                  <EditPen />
+                </el-icon> 重命名
               </el-dropdown-item>
               <el-dropdown-item command="delete">
-                <el-icon><Delete color="#F56C6C" /></el-icon> 删除
+                <el-icon>
+                  <Delete color="#F56C6C" />
+                </el-icon> 删除
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <span
-          class="option-switch"
-          v-if="isFolder"
-        >
+        <span class="option-switch" v-if="isFolder">
           <el-icon>
             <ArrowDownBold color="#868684" v-if="expanded" />
             <ArrowLeftBold color="#868684" v-else />
@@ -65,14 +51,10 @@
       </div>
     </div>
     <div v-if="expanded">
-      <NodeItem 
-        v-for="child in item.child" 
-        :key="child.id" 
-        :item="{
-          ...child,
-          depth: (documentInfo.depth || 0) + 1
-        }" 
-      />
+      <NodeItem v-for="child in item.child" :key="child.id" :item="{
+        ...child,
+        depth: (nodeInfo.depth || 0) + 1
+      }" />
     </div>
   </div>
 </template>
@@ -85,8 +67,20 @@ import { ArrowDownBold, ArrowLeftBold } from "@element-plus/icons-vue";
 import { createFolder, updateFolder, deleteFolder } from "@/api/folder";
 import { createDocument, updateDocument, deleteDocument } from "@/api/doc";
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { useFolderStore } from '@/stores/folderStore';
+import { useDomainStore } from '@/stores/domainStore';
 
+// props.item:
+// {
+//   id: `tmp_${Date.now()}`,
+//   title: isFolder ? "新建文件夹" : "新建文档",
+//   type,
+//   logo,
+//   depth: (nodeInfo.value.depth || 0) + 1,
+//   parentId: nodeInfo.value.id,
+//   domainId: nodeInfo.value.domainId,
+//   child: [],
+//   isTemp: true,
+// }
 const props = defineProps({
   item: {
     type: Object,
@@ -94,20 +88,20 @@ const props = defineProps({
   },
 });
 
-const folderStore = useFolderStore();
+const domainStore = useDomainStore();
 const documentStore = useDocumentStore();
 
 // 展开状态
 const expanded = ref(false);
-const documentInfo = ref(props.item);
+const nodeInfo = ref(props.item);
 
 // 计算属性：减少模板判断
-const isFolder = computed(() => documentInfo.value.type === NodeType.FOLDER);
-const isSelected = computed(() => documentInfo.value.id === documentStore.getDocumentId());
+const isFolder = computed(() => nodeInfo.value.type === NodeType.FOLDER);
+const isSelected = computed(() => nodeInfo.value.id === documentStore.getDocumentId());
 
 // 重命名状态
 const isRenaming = ref(false);
-const editTitle = ref(documentInfo.value.title);
+const editTitle = ref(nodeInfo.value.title);
 const inputRef = ref(null);
 
 // 展开目录
@@ -118,7 +112,7 @@ const expandFolder = (event) => {
   if (isFolder.value) {
     expanded.value = !expanded.value;
   } else {
-    documentStore.setDocument(documentInfo.value);
+    documentStore.setDocument(nodeInfo.value);
   }
 };
 
@@ -132,9 +126,9 @@ const onCommand = async (action) => {
         type: 'warning',
       });
       const api = isFolder.value ? deleteFolder : deleteDocument;
-      const response = await api({ id: documentInfo.value.id });
+      const response = await api({ id: nodeInfo.value.id });
       if (response.code === 200) {
-        folderStore.deleteNode(documentInfo.value.id);
+        domainStore.deleteNode(nodeInfo.value.id);
         ElMessage({ message: '删除成功', type: 'success' });
       } else {
         ElMessage({ message: '删除失败', type: 'error' });
@@ -154,7 +148,7 @@ const onCommand = async (action) => {
 
 // 重命名
 const onRename = () => {
-  editTitle.value = documentInfo.value.title;
+  editTitle.value = nodeInfo.value.title;
   isRenaming.value = true;
   nextTick(() => inputRef.value?.focus());
 };
@@ -163,44 +157,67 @@ const confirmRename = async () => {
   if (!isRenaming.value) return;
   const newTitle = editTitle.value.trim();
   if (newTitle !== "") {
-    documentInfo.value.title = newTitle;
-    await persistRename();
+    nodeInfo.value.title = newTitle;
+    await updateNode();
   }
   isRenaming.value = false;
 };
 
 const cancelRename = () => {
   isRenaming.value = false;
-  editTitle.value = documentInfo.value.title;
+  editTitle.value = nodeInfo.value.title;
 };
 
 // 合并新增临时节点逻辑
-const addChildNode = (type) => {
-  const logo = type === NodeType.FOLDER ? "📂" : "📝";
+const addChildNode = async (type) => {
+  const isFolder = type === NodeType.FOLDER;
+  const logo = isFolder ? "📂" : "📝";
   const newItem = {
     id: `tmp_${Date.now()}`,
-    title: type === NodeType.FOLDER ? "新建文件夹" : "新建文档",
+    title: isFolder ? "新建文件夹" : "新建文档",
     type,
     logo,
-    depth: (documentInfo.value.depth || 0) + 1,
-    parentId: documentInfo.value.id,
-    domainId: documentInfo.value.domainId,
+    depth: (nodeInfo.value.depth || 0) + 1,
+    parentId: nodeInfo.value.id,
+    domainId: nodeInfo.value.domainId,
     child: [],
     isTemp: true,
   };
-  // 本地插入，立即更新可见的子节点列表
-  if (!Array.isArray(documentInfo.value.child)) {
-    documentInfo.value.child = [];
+  if (isFolder) {
+    const response = await createFolder({
+      title: newItem.title,
+      parentId: newItem.parentId,
+      domainId: newItem.domainId,
+      logo: newItem.logo,
+    });
+    if (response.code === 200) {
+      newItem.id = response.data.id;
+    }
+  } else {
+    const response = await createDocument({
+      title: newItem.title,
+      folderId: newItem.parentId,
+      domainId: newItem.domainId,
+      logo: newItem.logo,
+      content: "",
+    });
+    if (response.code === 200) {
+      newItem.id = response.data.id;
+    }
   }
-  documentInfo.value.child.push(newItem);
+  // 本地插入，立即更新可见的子节点列表
+  if (!Array.isArray(nodeInfo.value.child)) {
+    nodeInfo.value.child = [];
+  }
+  nodeInfo.value.child.push(newItem);
   // 同步到 Store，保持全局一致
-  folderStore.addNode(newItem);
+  domainStore.addNode(newItem);
   // 展开当前节点以显示刚添加的子项
   expanded.value = true;
 };
 
 onMounted(() => {
-  if (documentInfo.value.isTemp) {
+  if (nodeInfo.value.isTemp) {
     onRename();
   }
 });
@@ -209,7 +226,7 @@ onMounted(() => {
 watch(
   () => props.item,
   (newItem) => {
-    documentInfo.value = newItem;
+    nodeInfo.value = newItem;
     // 若当前正处于重命名输入框展示，保持输入值与新标题一致
     if (!isRenaming.value) {
       editTitle.value = newItem.title;
@@ -218,58 +235,30 @@ watch(
   { deep: false }
 );
 
-// 新增/更新统一持久化
-const persistRename = async () => {
-  let response;
-  const isFolderNode = isFolder.value;
-  const successMsg = isFolderNode ? "目录保存成功" : "文档保存成功";
-  const failMsg = isFolderNode ? "目录保存失败" : "文档保存失败";
-
-  if (documentInfo.value.isTemp) {
-    // 新增
-    response = isFolderNode
-      ? await createFolder({
-          title: documentInfo.value.title,
-          parentId: documentInfo.value.parentId,
-          domainId: documentInfo.value.domainId,
-          logo: documentInfo.value.logo,
-        })
-      : await createDocument({
-          title: documentInfo.value.title,
-          folderId: documentInfo.value.parentId,
-          logo: documentInfo.value.logo,
-          content: "",
-          domainId: documentInfo.value.domainId,
-        });
-    if (response.code === 200) {
-      documentInfo.value.id = response.data.id;
-      documentInfo.value.isTemp = false;
-    }
-  } else {
-    // 更新
-    response = isFolderNode
-      ? await updateFolder({
-          id: documentInfo.value.id,
-          title: documentInfo.value.title,
-          parentId: documentInfo.value.parentId,
-          domainId: documentInfo.value.domainId,
-          logo: documentInfo.value.logo,
-        })
-      : await updateDocument({
-          id: documentInfo.value.id,
-          title: documentInfo.value.title,
-          folderId: documentInfo.value.parentId,
-          logo: documentInfo.value.logo,
-          domainId: documentInfo.value.domainId,
-        });
-  }
+// 更新Node
+const updateNode = async () => {
+  const response = isFolder.value
+    ? await updateFolder({
+      id: nodeInfo.value.id,
+      title: nodeInfo.value.title,
+      parentId: nodeInfo.value.parentId,
+      domainId: nodeInfo.value.domainId,
+      logo: nodeInfo.value.logo,
+    })
+    : await updateDocument({
+      id: nodeInfo.value.id,
+      title: nodeInfo.value.title,
+      folderId: nodeInfo.value.parentId,
+      logo: nodeInfo.value.logo,
+      domainId: nodeInfo.value.domainId,
+    });
 
   if (response?.code === 200) {
-    ElMessage({ message: successMsg, type: "success" });
+    ElMessage({ message: (isFolder.value ? "文件夹" : "文档") + "更新成功", type: "success" });
   } else {
-    ElMessage({ message: failMsg, type: "error" });
+    ElMessage({ message: (isFolder.value ? "文件夹" : "文档") + "更新失败", type: "error" });
   }
-};
+}
 </script>
 
 <style scoped lang="scss">
@@ -296,6 +285,7 @@ const persistRename = async () => {
     .item-info {
       display: flex;
       align-items: center;
+
       .item-info-logo {
         display: flex;
         align-items: center;
@@ -327,6 +317,7 @@ const persistRename = async () => {
     &:hover {
       background-color: #e8e8e7;
       transition: all 0.5s ease;
+
       .item-option {
         opacity: 1;
       }
@@ -334,6 +325,7 @@ const persistRename = async () => {
 
     &:active {
       background-color: #f0f0ef;
+
       .item-option {
         opacity: 1;
       }
@@ -353,6 +345,7 @@ const persistRename = async () => {
       padding: 3px;
       border-radius: 30%;
       cursor: pointer;
+
       &:hover {
         background-color: #dddddd;
         border-radius: 4px;

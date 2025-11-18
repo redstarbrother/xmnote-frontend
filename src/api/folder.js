@@ -11,6 +11,17 @@ export const getDirInfo = (params) => {
     });
 };
 
+// 获取文档树
+export const getDomainTree = (params) => {
+    return request({
+        url: '/folder/getDomainTree',
+        method: 'get',
+        params: {
+            ...params
+        }
+    });
+};
+
 // 创建目录
 export const createFolder = (data) => {
     return request({
