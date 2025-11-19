@@ -139,5 +139,96 @@ export const useDomainStore = defineStore("domain", () => {
         }
     }
 
-    return { init, getDomainTree, addNode, deleteNode };
-})
+    const updateNode = (id, partial) => {
+        if (!id || !partial) return;
+        if (folderMap.value[id]) {
+            const old = folderMap.value[id];
+            folderMap.value[id] = {
+                ...old,
+                name: partial.title ?? old.name,
+                logo: partial.logo ?? old.logo
+            };
+            return;
+        }
+        for (const key of Object.keys(folderDocumentMap.value)) {
+            const list = folderDocumentMap.value[key] || [];
+            const idx = list.findIndex((d) => d.id === id);
+            if (idx >= 0) {
+                const updated = {
+                    ...list[idx],
+                    title: partial.title ?? list[idx].title,
+                    logo: partial.logo ?? list[idx].logo
+                };
+                const copy = [...list];
+                copy[idx] = updated;
+                folderDocumentMap.value[key] = copy;
+                break;
+            }
+        }
+    }
+
+    const getFlatNotes = () => {
+        const folders = Object.values(folderMap.value).map((f) => ({
+            id: f.id,
+            domainId: f.domainId,
+            type: NodeType.FOLDER,
+            title: f.name,
+            logo: f.logo || "📂",
+            parentId: f.parentId ?? null,
+        }));
+        const docs = Object.entries(folderDocumentMap.value).flatMap(([folderId, list]) =>
+            (list || []).map((d) => ({
+                id: d.id,
+                domainId: folderMap.value[folderId]?.domainId,
+                type: NodeType.DOCUMENT,
+                title: d.title,
+                logo: d.logo || "📝",
+                parentId: folderId,
+            }))
+        );
+        return [...folders, ...docs];
+    }
+
+    const findNode = (id) => {
+        const f = folderMap.value[id];
+        if (f) {
+            return {
+                id: f.id,
+                domainId: f.domainId,
+                type: NodeType.FOLDER,
+                title: f.name,
+                logo: f.logo || "📂",
+                parentId: f.parentId ?? null,
+            };
+        }
+        for (const key of Object.keys(folderDocumentMap.value)) {
+            const list = folderDocumentMap.value[key] || [];
+            const doc = list.find((d) => d.id === id);
+            if (doc) {
+                const domainId = folderMap.value[key]?.domainId;
+                return {
+                    id: doc.id,
+                    domainId,
+                    type: NodeType.DOCUMENT,
+                    title: doc.title,
+                    logo: doc.logo || "📝",
+                    parentId: key,
+                };
+            }
+        }
+        return null;
+    }
+
+    const getPathToNode = (id) => {
+        const path = [];
+        let curr = findNode(id);
+        while (curr) {
+            path.unshift(curr);
+            if (!curr.parentId) break;
+            curr = findNode(curr.parentId);
+        }
+        return path;
+    }
+
+    return { init, getDomainTree, addNode, deleteNode, updateNode, getFlatNotes, findNode, getPathToNode };
+});

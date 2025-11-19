@@ -14,21 +14,24 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 
 export const useDocumentStore = defineStore("document", () => {
-  const document = ref(null);
-
-  // 保存状态：unsaved 未保存 | saving 保存中 | saved 已保存
+  const documentId = ref(null);
+  const content = ref({});
   const saveStatus = ref("saved");
 
-  function setDocument(doc) {
-    document.value = doc;
-  }
-
-  function getDocument() {
-    return document.value;
+  function setDocumentId(id) {
+    documentId.value = id || null;
   }
 
   function getDocumentId() {
-    return document.value?.id;
+    return documentId.value;
+  }
+
+  function setContent(c) {
+    content.value = c || {};
+  }
+
+  function getContent() {
+    return content.value;
   }
 
   function setSaveStatus(status) {
@@ -39,5 +42,11 @@ export const useDocumentStore = defineStore("document", () => {
     return saveStatus.value;
   }
 
-  return { setDocument, getDocument, getSaveStatus, setSaveStatus, getDocumentId };
+  function reset() {
+    documentId.value = null;
+    content.value = {};
+    saveStatus.value = "saved";
+  }
+
+  return { setDocumentId, getDocumentId, setContent, getContent, setSaveStatus, getSaveStatus, reset };
 });

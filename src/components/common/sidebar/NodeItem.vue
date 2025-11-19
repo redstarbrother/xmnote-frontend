@@ -1,6 +1,6 @@
 <template>
   <div class="node-item">
-    <div class="item-container" @click="expandFolder" :class="{ selected: isSelected }">
+    <div class="item-container" @click="clickNode" :class="{ selected: isSelected }">
       <div class="item-info">
         <span class="item-info-logo" :style="{ paddingLeft: `${(nodeInfo.depth || 0) * 16}px` }">{{ item.logo }}</span>
         <span v-if="!isRenaming" class="truncate" :class="{ file: isFolder }">
@@ -105,14 +105,14 @@ const editTitle = ref(nodeInfo.value.title);
 const inputRef = ref(null);
 
 // 展开目录
-const expandFolder = (event) => {
+const clickNode = (event) => {
   // 避免点击“更多”触发展开
   if (event.target.closest(".option-more")) return;
 
   if (isFolder.value) {
     expanded.value = !expanded.value;
   } else {
-    documentStore.setDocument(nodeInfo.value);
+    documentStore.setDocumentId(nodeInfo.value.id);
   }
 };
 
@@ -254,6 +254,7 @@ const updateNode = async () => {
     });
 
   if (response?.code === 200) {
+    domainStore.updateNode(nodeInfo.value.id, { title: nodeInfo.value.title, logo: nodeInfo.value.logo });
     ElMessage({ message: (isFolder.value ? "文件夹" : "文档") + "更新成功", type: "success" });
   } else {
     ElMessage({ message: (isFolder.value ? "文件夹" : "文档") + "更新失败", type: "error" });

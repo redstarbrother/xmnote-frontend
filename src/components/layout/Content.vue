@@ -38,10 +38,9 @@ import {
 } from "@putanut/xm-editor";
 import "@putanut/xm-editor/xm-editor.css";
 import { useDocumentStore } from "@/stores/documentStore";
-import { useFolderStore } from "@/stores/folderStore";
+import { useDomainStore } from "@/stores/domainStore";
 import {
   getDocument,
-  deleteDocument,
   updateDocument,
   uploadImage,
 } from "@/api/doc";
@@ -49,7 +48,7 @@ import { ElMessage } from "element-plus";
 
 const documentStore = useDocumentStore();
 const documentId = computed(() => documentStore.getDocumentId());
-const folderStore = useFolderStore();
+const domainStore = useDomainStore();
 
 const extensions = [
   Heading,
@@ -97,8 +96,10 @@ const editorProps = computed(() => ({
 
 const logo = ref("");
 const title = ref("");
-const content = ref({});
-const sourceContent = ref({});
+const content = computed({
+  get: () => documentStore.getContent(),
+  set: (v) => documentStore.setContent(v)
+});
 
 const isChanged = ref(false);
 
@@ -159,11 +160,18 @@ watch(
 watch(
   title,
   (newTitle) => {
-    console.log("newTitle: " + newTitle);
-    
     const id = documentId.value;
     if (!id) return;
-    folderStore.updateNode(id, { title: newTitle });
+    domainStore.updateNode(id, { title: newTitle });
+  }
+);
+
+watch(
+  logo,
+  (newLogo) => {
+    const id = documentId.value;
+    if (!id) return;
+    domainStore.updateNode(id, { logo: newLogo });
   }
 );
 
@@ -175,13 +183,13 @@ watch(
     if (typeof id === 'string' && id.startsWith('tmp_')) {
       title.value = "新建文档";
       logo.value = "📝";
-      content.value = {};
+      documentStore.setContent({});
       documentStore.setSaveStatus("unsaved");
       return;
     }
     title.value = "";
     logo.value = "📝";
-    content.value = {};
+    documentStore.setContent({});
     // 从接口获取文档数据
     const response = await getDocument({
       documentId: id,
@@ -200,8 +208,7 @@ watch(
       } catch (e) {
         parsed = {};
       }
-      sourceContent.value = parsed;
-      content.value = sourceContent.value;
+      documentStore.setContent(parsed);
       // 切换文档后默认视为已保存
       documentStore.setSaveStatus("saved");
     }
