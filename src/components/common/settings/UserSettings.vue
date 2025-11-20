@@ -1,19 +1,19 @@
 <template>
-  <!-- 设置弹出框 -->
-  <el-dialog
-    v-model="dialogVisible"
-    title="用户设置"
-    width="80%"
-    :before-close="handleClose"
-    class="settings-dialog"
-    center
-    :z-index="3000"
-    teleported
-  >
-    <el-tabs type="border-card">
-      <!-- 网站设置 -->
-      <el-tab-pane label="网站设置">
-        <el-form :model="settings.site" label-width="120px">
+  <div v-if="dialogVisible" class="settings-overlay" @click="handleClose">
+    <div class="settings-dialog" role="dialog" aria-modal="true" @click.stop>
+      <div class="settings-header">
+        <div class="settings-title">设置</div>
+        <button class="settings-close" @click="handleClose">×</button>
+      </div>
+      <div class="settings-body">
+        <div class="settings-sidebar">
+          <div class="tab-item" :class="{ 'is-active': activeTab === 'site' }" @click="scrollTo('site')">网站设置</div>
+          <div class="tab-item" :class="{ 'is-active': activeTab === 'editor' }" @click="scrollTo('editor')">编辑器设置</div>
+          <div class="tab-item" :class="{ 'is-active': activeTab === 'user' }" @click="scrollTo('user')">用户设置</div>
+        </div>
+        <div class="settings-content" ref="contentRef" @scroll="onContentScroll">
+          <div ref="siteRef">
+        <el-form :model="settings.site" label-width="120px" label-position="top">
           <el-form-item label="网站名称">
             <el-input v-model="settings.site.siteName" />
           </el-form-item>
@@ -104,11 +104,10 @@
             <el-switch v-model="settings.site.newsletterOptIn" />
           </el-form-item>
         </el-form>
-      </el-tab-pane>
+          </div>
       
-      <!-- 编辑器设置 -->
-      <el-tab-pane label="编辑器设置">
-        <el-form :model="settings.editor" label-width="120px">
+          <div ref="editorRef">
+        <el-form :model="settings.editor" label-width="120px" label-position="top">
           <el-form-item label="显示工具栏">
             <el-switch v-model="settings.editor.showToolbar" />
           </el-form-item>
@@ -211,11 +210,10 @@
             <el-input v-model="settings.editor.watermarkText" />
           </el-form-item>
         </el-form>
-      </el-tab-pane>
+          </div>
       
-      <!-- 用户设置 -->
-      <el-tab-pane label="用户设置">
-        <el-form :model="settings.user" label-width="120px">
+          <div ref="userRef">
+        <el-form :model="settings.user" label-width="120px" label-position="top">
           <el-form-item label="语言">
             <el-select v-model="settings.user.language">
               <el-option label="简体中文" value="zh-CN" />
@@ -255,24 +253,28 @@
             <el-switch v-model="settings.user.enableShortcuts" />
           </el-form-item>
         </el-form>
-      </el-tab-pane>
-    </el-tabs>
-    
-    <template #footer>
-      <span class="dialog-footer">
+          </div>
+        </div>
+      </div>
+      <div class="settings-footer">
         <el-button @click="cancel">取消</el-button>
         <el-button type="primary" @click="save">保存</el-button>
-      </span>
-    </template>
-  </el-dialog>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue";
 import { ElMessage } from "element-plus";
 
 // 对话框可见性
 const dialogVisible = ref(false);
+const activeTab = ref('site');
+const contentRef = ref(null);
+const siteRef = ref(null);
+const editorRef = ref(null);
+const userRef = ref(null);
 
 // 设置数据
 const settings = reactive({
@@ -470,6 +472,45 @@ onMounted(() => {
   applySettings();
 });
 
+const onKeydown = (e) => {
+  if (e.key === 'Escape' && dialogVisible.value) {
+    handleClose();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeydown);
+});
+
+const scrollTo = (key) => {
+  const map = { site: siteRef, editor: editorRef, user: userRef };
+  const target = map[key]?.value;
+  const container = contentRef.value;
+  if (!target || !container) return;
+  container.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
+  activeTab.value = key;
+};
+
+const onContentScroll = () => {
+  const container = contentRef.value;
+  if (!container) return;
+  const scrollTop = container.scrollTop;
+  const positions = [
+    { key: 'site', top: siteRef.value?.offsetTop ?? 0 },
+    { key: 'editor', top: editorRef.value?.offsetTop ?? 0 },
+    { key: 'user', top: userRef.value?.offsetTop ?? 0 },
+  ];
+  let current = 'site';
+  for (const p of positions) {
+    if (p.top - 10 <= scrollTop) current = p.key;
+  }
+  activeTab.value = current;
+};
+
 // 暴露方法给父组件
 defineExpose({
   open
@@ -477,11 +518,101 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-// 设置弹出框样式
-:deep(.settings-dialog) {
-  .el-dialog__body {
-    max-height: 50vh;
-    overflow-y: auto;
-  }
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.settings-dialog {
+  width: 80%;
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.settings-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.settings-close {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.settings-body {
+  overflow: hidden;
+  flex: 1 1 auto;
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+}
+
+.settings-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+}
+
+.tab-item {
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tab-item:hover {
+  background-color: #f5f7fa;
+}
+
+.tab-item.is-active {
+  color: var(--accent-color);
+  font-weight: 600;
+  background-color: #f0f6ff;
+}
+
+.settings-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0 16px 16px 16px;
+}
+
+.settings-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.settings-content :deep(.el-divider) {
+  margin: 16px 0;
+  --el-border-color: #E6E8EB;
+}
+
+.settings-content :deep(.el-divider__text) {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-color);
+  padding: 0 8px;
+  background: #fff;
 }
 </style>

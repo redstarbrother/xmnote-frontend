@@ -3,19 +3,19 @@
     <h3>新手指南</h3>
     <ul>
       <li>
-        <el-checkbox v-model="steps.createDoc" disabled>创建第一个文档</el-checkbox>
+        创建第一个文档
       </li>
       <li>
-        <el-checkbox v-model="steps.createFolder" disabled>建立一个文件夹</el-checkbox>
+        建立一个文件夹
       </li>
       <li>
-        <el-checkbox v-model="steps.tryTemplate" disabled>尝试一个模板</el-checkbox>
+        尝试一个模板
       </li>
       <li>
-        <el-checkbox v-model="steps.share" disabled>邀请协作或分享</el-checkbox>
+        邀请协作或分享
       </li>
       <li>
-        <el-checkbox v-model="steps.tag" disabled>给文档添加标签</el-checkbox>
+        给文档添加标签
       </li>
     </ul>
   </section>
