@@ -39,6 +39,8 @@ export const useDocumentStore = defineStore("document", () => {
   }
 
   function getSaveStatus() {
+    console.log("saveStatus.value:", saveStatus.value);
+    
     return saveStatus.value;
   }
 

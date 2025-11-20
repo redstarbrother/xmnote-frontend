@@ -101,7 +101,8 @@ const content = computed({
   set: (v) => documentStore.setContent(v)
 });
 
-const isChanged = ref(false);
+// 使用保存状态统一驱动未保存标记与自动保存
+const initializing = ref(false);
 
 const handleEnterTitle = () => {
   console.log("回车键被按下！");
@@ -116,7 +117,8 @@ const handleEditorChange = ({ editor }) => {
 onMounted(() => {
   // TODO 设置30秒自动保存
   setInterval(() => {
-    if (isChanged.value) {
+    const status = documentStore.getSaveStatus();
+    if (status === "unsaved") {
       // 保存文档
       saveDocument();
     }
@@ -141,16 +143,15 @@ const saveDocument = async () => {
     // 保存失败维持未保存状态
     documentStore.setSaveStatus("unsaved");
   } else {
-    isChanged.value = false;
     documentStore.setSaveStatus("saved");
   }
 };
 
-// 监听文档信息变化，更改isChanged
+// 监听文档信息变化，更新保存状态
 watch(
   [logo, title, content],
   () => {
-    isChanged.value = true;
+    if (initializing.value) return;
     documentStore.setSaveStatus("unsaved");
   },
   { deep: true }
@@ -180,16 +181,7 @@ watch(
   documentId,
   async (id) => {
     if (!id) return;
-    if (typeof id === 'string' && id.startsWith('tmp_')) {
-      title.value = "新建文档";
-      logo.value = "📝";
-      documentStore.setContent({});
-      documentStore.setSaveStatus("unsaved");
-      return;
-    }
-    title.value = "";
-    logo.value = "📝";
-    documentStore.setContent({});
+    initializing.value = true;
     // 从接口获取文档数据
     const response = await getDocument({
       documentId: id,
@@ -213,6 +205,7 @@ watch(
       documentStore.setSaveStatus("saved");
     }
     await nextTick();
+    initializing.value = false;
   },
   { immediate: true }
 );
@@ -234,7 +227,7 @@ watch(
   background-color: transparent !important;
 }
 
-.content-container {
+  .content-container {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -242,34 +235,20 @@ watch(
   align-items: center;
   overflow: auto; // 使容器可滚动
 
-  .content-title {
-    width: 50%;
-    height: 60px; // 固定高度
-    flex-shrink: 0;
-    display: flex;
-    align-items: flex-start;
-    position: sticky; // 吸顶效果
-    top: 0; 
-    background-color: #fff;
-    z-index: 10;
-    padding: 2px;
-    
-    // 添加底部渐变阴影效果
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 0;
-      width: 100%;
-      height: 10px;
-      background: linear-gradient(to bottom, rgba(255, 255, 255, 1), transparent);
-      pointer-events: none; // 确保不会影响鼠标事件
-    }
-    .logo {
-      padding: 0;
-      font-size: 3rem;
-      font-weight: 600;
-      color: #000000;
+    .content-title {
+      width: 50%;
+      height: 60px; // 固定高度
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-start;
+      background-color: #fff;
+      padding: 2px;
+
+      .logo {
+        padding: 0;
+        font-size: 3rem;
+        font-weight: 600;
+        color: #000000;
       cursor: pointer;
       &:hover {
         background-color: rgba(55, 53, 47, 0.06);

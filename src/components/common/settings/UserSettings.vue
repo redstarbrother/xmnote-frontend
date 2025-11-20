@@ -7,6 +7,8 @@
     :before-close="handleClose"
     class="settings-dialog"
     center
+    :z-index="3000"
+    teleported
   >
     <el-tabs type="border-card">
       <!-- 网站设置 -->
