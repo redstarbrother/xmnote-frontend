@@ -1,2 +1,2 @@
 overrides:
-  xm-editor: link:C:/Users/jhx24/AppData/Local/pnpm/global/5/node_modules/xm-editor
+  xm-editor: link:../../../NodeData/node_modules_pnpm/global/5/node_modules/xm-editor

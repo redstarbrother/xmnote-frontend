@@ -2,16 +2,12 @@
   <ContentWelcome v-if="!documentId" />
   <div v-else class="content-container">
     <div class="content-title">
-      <div class="logo">{{logo}}</div>
-      <input
-        class="content-title-input"
-        v-model="title"
-        placeholder="请输入标题"
-        @keyup.enter="handleEnterTitle"
-      />
+      <div class="logo">{{ logo }}</div>
+      <input class="content-title-input" v-model="title" placeholder="请输入标题" @keyup.enter="handleEnterTitle" />
     </div>
     <div class="content-editor">
-      <XmEditor v-bind="editorProps" v-model:content="content"/>
+      <!-- <XmEditor v-bind="editorProps" v-model:content="content"/> -->
+      <div id="xm-editor" />
     </div>
     <div class="content-footer">
       <Footer />
@@ -21,22 +17,8 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from "vue";
-import XmEditor from "@putanut/xm-editor";
+import { XmEditor, Extensions, Presets } from "@putanut/xm-editor";
 import ContentWelcome from "@/components/welcome/ContentWelcome.vue";
-import {
-  Heading,
-  Bold,
-  Italic,
-  Strike,
-  Underline,
-  List,
-  Blockquote,
-  HorizontalRule,
-  CodeBlock,
-  Image,
-  Table,
-} from "@putanut/xm-editor";
-import "@putanut/xm-editor/xm-editor.css";
 import { useDocumentStore } from "@/stores/documentStore";
 import { useDomainStore } from "@/stores/domainStore";
 import {
@@ -50,68 +32,92 @@ const documentStore = useDocumentStore();
 const documentId = computed(() => documentStore.getDocumentId());
 const domainStore = useDomainStore();
 
-const extensions = [
-  Heading,
-  Bold,
-  Italic,
-  Underline,
-  Strike,
-  List,
-  Blockquote,
-  HorizontalRule,
-  CodeBlock,
-  Image.configure({
-    uploadHandler: (file) => {
-      const formData = new FormData();
-      formData.append("type", file.type);
-      formData.append("file", file);
-      console.log("formData:");
-      for (let [k, v] of formData.entries()) {
-        console.log(k, v);
-      }
-      return uploadImage(formData)
-        .then((res) => {
-          return {
-            url: res.data.url,
-          };
-        })
-        .catch((err) => {
-          ElMessage.error(err.message);
-          return Promise.reject(err);
-        });
-    },
-  }),
-  Table,
-];
+// const extensions = [
+//   Heading,
+//   Bold,
+//   Italic,
+//   Underline,
+//   Strike,
+//   List,
+//   Blockquote,
+//   HorizontalRule,
+//   CodeBlock,
+//   Image.configure({
+//     uploadHandler: (file) => {
+//       const formData = new FormData();
+//       formData.append("type", file.type);
+//       formData.append("file", file);
+//       console.log("formData:");
+//       for (let [k, v] of formData.entries()) {
+//         console.log(k, v);
+//       }
+//       return uploadImage(formData)
+//         .then((res) => {
+//           return {
+//             url: res.data.url,
+//           };
+//         })
+//         .catch((err) => {
+//           ElMessage.error(err.message);
+//           return Promise.reject(err);
+//         });
+//     },
+//   }),
+//   Table,
+// ];
+// 内容修改回调方法
+const handleEditorChange = () => {
+  if (initializing.value) return;
+  documentStore.setSaveStatus("unsaved");
+};
 
-const editorProps = computed(() => ({
-  extensions,
-  fixedMenuEnabled: false,
-  backgroundColorOnFocus: "#ffffff",
-  placeholder: "",
-  showBorder: false,
-  height: "100%",
-  onUpdate: handleEditorChange,
-}));
+console.log("Presets:", Presets);
+
+const editor = new XmEditor({
+  el: "#xm-editor",
+  config: Presets.NotionLike.configure({
+    extensions: [
+      Extensions.Image.configure({
+        uploadHandler: (file) => {
+          const formData = new FormData();
+          formData.append("type", file.type);
+          formData.append("file", file);
+          return uploadImage(formData)
+            .then((res) => {
+              return {
+                url: res.data.url,
+              };
+            })
+            .catch((err) => {
+              ElMessage.error(err.message);
+              return Promise.reject(err);
+            });
+        },
+      }),
+    ],
+    onUpdate: handleEditorChange,
+  }),
+});
+
+// const editorProps = computed(() => ({
+//   extensions,
+//   fixedMenuEnabled: false,
+//   backgroundColorOnFocus: "#ffffff",
+//   placeholder: "",
+//   showBorder: false,
+//   height: "100%",
+//   onUpdate: handleEditorChange,
+// }));
 
 const logo = ref("");
 const title = ref("");
-const content = computed({
-  get: () => documentStore.getContent(),
-  set: (v) => documentStore.setContent(v)
-});
 
 // 使用保存状态统一驱动未保存标记与自动保存
 const initializing = ref(false);
 
 const handleEnterTitle = () => {
   console.log("回车键被按下！");
-};
-
-// 内容修改回调方法
-const handleEditorChange = ({ editor }) => {
-  // content.value = editor.getJSON();
-  console.log(content.value);
+  editor.focus();
 };
 
 onMounted(() => {
@@ -132,11 +138,12 @@ const saveDocument = async () => {
   // 更新保存状态为保存中
   documentStore.setSaveStatus("saving");
 
+  let content = editor.getJSON();
   const response = await updateDocument({
     id: documentId.value,
     title: title.value,
     logo: logo.value,
-    content: JSON.stringify(content.value),
+    content: JSON.stringify(content),
   });
   if (response.code !== 200) {
     ElMessage.error("内容保存失败");
@@ -149,7 +156,7 @@ const saveDocument = async () => {
 
 // 监听文档信息变化，更新保存状态
 watch(
-  [logo, title, content],
+  [logo, title],
   () => {
     if (initializing.value) return;
     documentStore.setSaveStatus("unsaved");
@@ -200,7 +207,7 @@ watch(
       } catch (e) {
         parsed = {};
       }
-      documentStore.setContent(parsed);
+      editor.setContent(parsed);
       // 切换文档后默认视为已保存
       documentStore.setSaveStatus("saved");
     }
@@ -220,14 +227,14 @@ watch(
 .content-container::-webkit-scrollbar-thumb {
   background-color: #D3D1CB !important;
   border-radius: 4px !important;
-  border: none !important; 
+  border: none !important;
 }
 
 .content-container::-webkit-scrollbar-track {
   background-color: transparent !important;
 }
 
-  .content-container {
+.content-container {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -235,21 +242,22 @@ watch(
   align-items: center;
   overflow: auto; // 使容器可滚动
 
-    .content-title {
-      width: 50%;
-      height: 60px; // 固定高度
-      flex-shrink: 0;
-      display: flex;
-      align-items: flex-start;
-      background-color: #fff;
-      padding: 2px;
+  .content-title {
+    width: 50%;
+    height: 60px; // 固定高度
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    background-color: #fff;
+    padding: 2px;
 
-      .logo {
-        padding: 0;
-        font-size: 3rem;
-        font-weight: 600;
-        color: #000000;
+    .logo {
+      padding: 0;
+      font-size: 3rem;
+      font-weight: 600;
+      color: #000000;
       cursor: pointer;
+
       &:hover {
         background-color: rgba(55, 53, 47, 0.06);
       }
