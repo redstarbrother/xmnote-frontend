@@ -1,13 +1,13 @@
 <template>
-  <ContentWelcome v-if="!documentId" />
-  <div v-else class="content-container">
+  <ContentWelcome v-show="!documentId" />
+  <div class="content-container">
     <div class="content-title">
       <div class="logo">{{ logo }}</div>
       <input class="content-title-input" v-model="title" placeholder="请输入标题" @keyup.enter="handleEnterTitle" />
     </div>
     <div class="content-editor">
       <!-- <XmEditor v-bind="editorProps" v-model:content="content"/> -->
-      <div id="xm-editor" />
+      <div id="xm-editor"> </div>
     </div>
     <div class="content-footer">
       <Footer />
@@ -18,6 +18,7 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from "vue";
 import { XmEditor, Extensions, Presets } from "@putanut/xm-editor";
+import "@putanut/xm-editor/xm-editor.css"
 import ContentWelcome from "@/components/welcome/ContentWelcome.vue";
 import { useDocumentStore } from "@/stores/documentStore";
 import { useDomainStore } from "@/stores/domainStore";
@@ -31,83 +32,48 @@ import { ElMessage } from "element-plus";
 const documentStore = useDocumentStore();
 const documentId = computed(() => documentStore.getDocumentId());
 const domainStore = useDomainStore();
-
-// const extensions = [
-//   Heading,
-//   Bold,
-//   Italic,
-//   Underline,
-//   Strike,
-//   List,
-//   Blockquote,
-//   HorizontalRule,
-//   CodeBlock,
-//   Image.configure({
-//     uploadHandler: (file) => {
-//       const formData = new FormData();
-//       formData.append("type", file.type);
-//       formData.append("file", file);
-//       console.log("formData:");
-//       for (let [k, v] of formData.entries()) {
-//         console.log(k, v);
-//       }
-//       return uploadImage(formData)
-//         .then((res) => {
-//           return {
-//             url: res.data.url,
-//           };
-//         })
-//         .catch((err) => {
-//           ElMessage.error(err.message);
-//           return Promise.reject(err);
-//         });
-//     },
-//   }),
-//   Table,
-// ];
+const editorInitialized = ref(false);
 // 内容修改回调方法
 const handleEditorChange = () => {
   if (initializing.value) return;
+  documentStore.setContent(editor.getJSON());
   documentStore.setSaveStatus("unsaved");
 };
 
 console.log("Presets:", Presets);
 
-const editor = new XmEditor({
-  el: "#xm-editor",
-  config: Presets.NotionLike.configure({
-    extensions: [
-      Extensions.Image.configure({
-        uploadHandler: (file) => {
-          const formData = new FormData();
-          formData.append("type", file.type);
-          formData.append("file", file);
-          return uploadImage(formData)
-            .then((res) => {
-              return {
-                url: res.data.url,
-              };
-            })
-            .catch((err) => {
-              ElMessage.error(err.message);
-              return Promise.reject(err);
-            });
-        },
-      }),
-    ],
-    onUpdate: handleEditorChange,
-  }),
-});
+let editor = null;
 
-// const editorProps = computed(() => ({
-//   extensions,
-//   fixedMenuEnabled: false,
-//   backgroundColorOnFocus: "#ffffff",
-//   placeholder: "",
-//   showBorder: false,
-//   height: "100%",
-//   onUpdate: handleEditorChange,
-// }));
+onMounted(() => {
+  // 第一次打开文档时初始化editor
+  editor = new XmEditor({
+    el: "#xm-editor",
+    config: Presets.NotionLike.configure({
+      extensions: [
+        Extensions.Image.configure({
+          uploadHandler: (file) => {
+            const formData = new FormData();
+            formData.append("type", file.type);
+            formData.append("file", file);
+            return uploadImage(formData)
+              .then((res) => {
+                return {
+                  url: res.data.url,
+                };
+              })
+              .catch((err) => {
+                ElMessage.error(err.message);
+                return Promise.reject(err);
+              });
+          },
+        }),
+      ],
+      onUpdate: handleEditorChange,
+    }),
+  });
+})
+
+
 
 const logo = ref("");
 const title = ref("");
@@ -154,15 +120,11 @@ const saveDocument = async () => {
   }
 };
 
-// 监听文档信息变化，更新保存状态
-watch(
-  [logo, title],
-  () => {
-    if (initializing.value) return;
-    documentStore.setSaveStatus("unsaved");
-  },
-  { deep: true }
-);
+// 手动改变保存状态
+const changeSaveStatus = (status) => {
+  if (initializing.value) return;
+  documentStore.setSaveStatus(status);
+};
 
 // 当标题变化时，同步更新侧边栏与面包屑的标题
 watch(
@@ -171,6 +133,7 @@ watch(
     const id = documentId.value;
     if (!id) return;
     domainStore.updateNode(id, { title: newTitle });
+    changeSaveStatus("unsaved");
   }
 );
 
@@ -180,6 +143,7 @@ watch(
     const id = documentId.value;
     if (!id) return;
     domainStore.updateNode(id, { logo: newLogo });
+    changeSaveStatus("unsaved");
   }
 );
 
@@ -211,6 +175,8 @@ watch(
       // 切换文档后默认视为已保存
       documentStore.setSaveStatus("saved");
     }
+
+
     await nextTick();
     initializing.value = false;
   },
