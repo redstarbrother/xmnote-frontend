@@ -209,7 +209,7 @@ watch(
   overflow: auto; // 使容器可滚动
 
   .content-title {
-    width: 50%;
+    width: 70%;
     height: 60px; // 固定高度
     flex-shrink: 0;
     display: flex;
@@ -244,7 +244,7 @@ watch(
   }
 
   .content-editor {
-    width: 50%;
+    width: 70%;
     flex: 1;
     overflow: visible; // 修改为visible，防止内部出现滚动条
   }
