@@ -65,7 +65,7 @@
                     <div class="form-group">
                         <label for="password">密码</label>
                         <input v-model="loginForm.credential" type="password" id="password" name="password"
-                            placeholder="请输入密码" required>
+                            placeholder="请输入密码" @keyup.enter="handleLogin" required>
                     </div>
                     <div class="form-group">
                         <el-button type="primary" @click="handleLogin">登录</el-button>

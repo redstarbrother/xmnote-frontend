@@ -1,9 +1,13 @@
 <template>
   <div class="sidebar-container">
     <div class="main-content">
-      <div class="search-area">
-        <el-input v-model="searchContent" size="large" placeholder="Please Input" :suffix-icon="Search" />
+      <div class="logo-area">
+        <img src="/logo.svg" alt="logo" class="logo" />
+        <div class="highlight">西木笔记</div>
       </div>
+      <!-- <div class="search-area">
+        <el-input v-model="searchContent" size="large" placeholder="Please Input" :suffix-icon="Search" />
+      </div> -->
       <div class="domain-area">
         <div class="domain-item" v-for="domain in domainTree" :key="domain.domainName">
           <div class="domain-item-content">
@@ -112,6 +116,29 @@ const addFolderNode = () => {
     &::-webkit-scrollbar {
       width: 0;
       height: 0;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: nowrap;
+      gap: 10px;
+      transition: transform 0.3s ease;
+
+      .logo {
+        width: 64px;
+        height: 64px;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+
+      .highlight {
+        font-size: 32px;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: #5f5f5b;
+        font-weight: 700;
+      }
     }
 
     .search-area {

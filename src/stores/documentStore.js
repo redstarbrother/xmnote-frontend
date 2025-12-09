@@ -14,12 +14,12 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 
 export const useDocumentStore = defineStore("document", () => {
-  const documentId = ref(null);
+  const documentId = ref("");
   const content = ref({});
   const saveStatus = ref("saved");
 
   function setDocumentId(id) {
-    documentId.value = id || null;
+    documentId.value = id || "";
   }
 
   function getDocumentId() {

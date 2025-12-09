@@ -9,7 +9,7 @@
           <Header />
         </el-header>
         <el-main>
-          <Content />
+          <Main />
         </el-main>
       </el-container>
     </el-container>
@@ -20,8 +20,7 @@
 import { onMounted } from "vue";
 import Sidebar from '@/components/layout/Sidebar.vue';
 import Header from '@/components/layout/Header.vue';
-import Content from '@/components/layout/Content.vue';
-import Footer from '@/components/layout/Footer.vue';
+import Main from '@/components/layout/Main.vue';
 import { useDomainStore } from '@/stores/domainStore';
 import { getDomainTree } from '@/api/folder';
 import { getUserIdFromToken } from '@/utils/jwtUtil';
