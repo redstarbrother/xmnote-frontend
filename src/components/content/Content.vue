@@ -1,14 +1,16 @@
 <template>
-    <div class="content-title">
-        <div class="logo">{{ logo }}</div>
-        <input class="content-title-input" v-model="title" placeholder="请输入标题" @keyup.enter="handleEnterTitle" />
-    </div>
-    <div class="content-editor">
-        <!-- <XmEditor v-bind="editorProps" v-model:content="content"/> -->
-        <div id="xm-editor"> </div>
-    </div>
-    <div class="content-footer">
-        <Footer />
+    <div class="content-container">
+        <div class="content-title">
+            <div class="logo">{{ logo }}</div>
+            <input class="content-title-input" v-model="title" placeholder="请输入标题" @keyup.enter="handleEnterTitle" />
+        </div>
+        <div class="content-editor">
+            <!-- <XmEditor v-bind="editorProps" v-model:content="content"/> -->
+            <div id="xm-editor"> </div>
+        </div>
+        <div class="content-footer">
+            <Footer />
+        </div>
     </div>
 </template>
 
@@ -182,48 +184,52 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-.content-title {
+.content-container {
     width: 70%;
-    height: 60px; // 固定高度
-    flex-shrink: 0;
-    display: flex;
-    align-items: flex-start;
-    background-color: #fff;
-    padding: 2px;
-
-    .logo {
-        padding: 0;
-        font-size: 3rem;
-        font-weight: 600;
-        color: #000000;
-        cursor: pointer;
-
-        &:hover {
-            background-color: rgba(55, 53, 47, 0.06);
-        }
-    }
-
-    .content-title-input {
+    
+    .content-title {
         width: 100%;
-        font-size: 40px;
-        font-weight: 600;
-        height: 100%;
-        border: none;
-        outline: none;
+        height: 60px; // 固定高度
+        flex-shrink: 0;
+        display: flex;
+        align-items: flex-start;
+        background-color: #fff;
+        padding: 10px 20px;
 
-        &::placeholder {
-            color: #bcbcb8;
+        .logo {
+            padding: 0;
+            font-size: 3rem;
+            font-weight: 600;
+            color: #000000;
+            cursor: pointer;
+
+            &:hover {
+                background-color: rgba(55, 53, 47, 0.06);
+            }
+        }
+
+        .content-title-input {
+            width: 100%;
+            font-size: 40px;
+            font-weight: 600;
+            height: 100%;
+            border: none;
+            outline: none;
+
+            &::placeholder {
+                color: #bcbcb8;
+            }
         }
     }
-}
 
-.content-editor {
-    width: 70%;
-    flex: 1;
-    overflow: visible; // 修改为visible，防止内部出现滚动条
-}
+    .content-editor {
+        width: 100%;
+        flex: 1;
+        overflow: visible; // 修改为visible，防止内部出现滚动条
+    }
 
-.content-footer {
-    flex-shrink: 0;
+    .content-footer {
+        flex-shrink: 0;
+    }
 }
 </style>

@@ -24,7 +24,6 @@ import TipsSection from './TipsSection.vue';
   width: 100%;
   height: 100%;
   overflow: auto;
-  padding: 2vh 2vw;
 }
 
 .welcome-grid {
