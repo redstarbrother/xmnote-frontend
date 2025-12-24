@@ -8,9 +8,9 @@
             <!-- <XmEditor v-bind="editorProps" v-model:content="content"/> -->
             <div id="xm-editor"> </div>
         </div>
-        <div class="content-footer">
+        <!-- <div class="content-footer">
             <Footer />
-        </div>
+        </div> -->
     </div>
 </template>
 
@@ -68,6 +68,7 @@ onMounted(() => {
                 }),
             ],
             onUpdate: handleEditorChange,
+            backgroundColorOnFocus: "#f8f9fa",
         }),
     });
 })
@@ -193,7 +194,7 @@ watch(
         flex-shrink: 0;
         display: flex;
         align-items: flex-start;
-        background-color: #fff;
+        background-color: #f8f9fa;
         padding: 10px 20px;
 
         .logo {
@@ -215,6 +216,7 @@ watch(
             height: 100%;
             border: none;
             outline: none;
+            background-color: #f8f9fa;
 
             &::placeholder {
                 color: #bcbcb8;

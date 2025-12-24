@@ -2,7 +2,7 @@
   <div class="user-container">
     <div class="user-info-area">
       <div class="user-info-avatar">
-        <el-avatar shape="square" :size="50" :src="userInfo.avatarUrl" />
+        <el-avatar shape="square" :size="40" :src="userInfo.avatarUrl" />
       </div>
       <div class="user-info-message">
         <span class="user-name">{{ userInfo.username }}</span>
@@ -10,7 +10,12 @@
       </div>
       <!-- 新增：右侧注销按钮 -->
       <div class="user-actions">
-        <el-button link type="danger" class="logout-btn" @click.stop="logout">注销</el-button>
+        <el-button link class="action-btn" @click.stop="openSettings" title="设置">
+          <el-icon :size="20"><Setting /></el-icon>
+        </el-button>
+        <el-button link type="danger" class="action-btn" @click.stop="logout" title="注销">
+          <el-icon :size="20"><SwitchButton /></el-icon>
+        </el-button>
       </div>
     </div>
     <!-- <div v-if="showDocInfo" class="doc-info-area">
@@ -18,15 +23,15 @@
       <span class="count-info">🔢 字数：{{ docStats.wordCount }}</span>
       <span class="count-info">🔖 书签：{{ docStats.bookmarkCount }}</span>
     </div> -->
-    <div class="options-area">
+    <!-- <div class="options-area">
       <el-button link type="primary" class="option-btn" @click="showStats">📊 数据统计</el-button>
       <el-button link type="primary" class="option-btn" @click="openSettings">⚙️ 设置</el-button>
-    </div>
+    </div> -->
   </div>
 
   <!-- 引入设置组件 -->
   <UserSettings ref="userSettingsRef" />
-      
+
 </template>
 
 <script setup>
@@ -35,6 +40,7 @@ import { useUserStore } from "@/stores/userStore";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import UserSettings from "@/components/common/settings/UserSettings.vue";
+import { Setting, SwitchButton } from "@element-plus/icons-vue";
 
 // 用户信息
 const userStore = useUserStore();
@@ -112,10 +118,10 @@ const logout = async () => {
 .user-container {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 95%;
   height: 100%;
-  padding: var(--spacing-sm);
-  
+  padding: 12px;
+
   .user-info-area {
     display: flex;
     align-items: center;
@@ -141,30 +147,29 @@ const logout = async () => {
 
     .user-info-avatar {
       // display: inline-block;
-      height: 50px;
+      height: 40px;
     }
 
     .user-info-message {
-      height: 100%;
       display: flex;
-      flex-wrap: wrap;
-      align-content: space-around;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
       margin-left: 10px;
-      flex: 1; // 撑满剩余空间，右侧按钮靠右
-      
+
       .user-name {
-        width: 100%;
-        font-size: 20px;
-        font-weight: bold;
+        font-size: 16px;
+        font-weight: 600;
         margin-left: var(--spacing-md);
         color: var(--text-primary);
       }
-      
+
       .server-addr {
-        width: 100%;
-        color: var(--text-secondary);
-        font-size: 13px;
-        margin-left: var(--spacing-md);
+        background-color: rgb(219 234 254);
+        font-size: 10px;
+        border-radius: 0.25rem;
+        padding: 0.2rem 0.35rem;
+        color: #007bff;
       }
     }
 
@@ -173,18 +178,25 @@ const logout = async () => {
       display: flex;
       align-items: center;
 
-      .logout-btn {
-        font-size: 14px;
+      .action-btn {
+        padding: 6px;
+        height: auto;
+        margin-left: 0;
+        
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+          border-radius: 4px;
+        }
       }
     }
   }
-  
+
   .doc-info-area {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     margin-top: var(--spacing-sm);
-    
+
     .count-info {
       width: 100%;
       font-size: 14px;
@@ -192,16 +204,16 @@ const logout = async () => {
       color: var(--text-primary);
     }
   }
-  
+
   .options-area {
     display: flex;
     align-items: center;
     margin-top: var(--spacing-sm);
-    
+
     .option-btn {
       font-size: 14px;
       margin-right: var(--spacing-md);
-      
+
       &:last-child {
         margin-right: 0;
       }
@@ -214,12 +226,13 @@ const logout = async () => {
   .user-container {
     .user-info-area {
       flex-direction: column;
-      
+
       .user-info-message {
         margin-top: var(--spacing-sm);
         text-align: center;
-        
-        .user-name, .server-addr {
+
+        .user-name,
+        .server-addr {
           margin-left: 0;
         }
       }

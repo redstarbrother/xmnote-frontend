@@ -1,10 +1,10 @@
 <template>
   <div class="home">
     <el-container>
-      <el-aside width="15vw" height="100vh">
+      <el-aside width="auto">
         <Sidebar />
       </el-aside>
-      <el-container>
+      <el-container style="background-color: #f8f9fa;">
         <el-header>
           <Header />
         </el-header>
@@ -18,7 +18,7 @@
 
 <script setup>
 import { onMounted } from "vue";
-import Sidebar from '@/components/layout/Sidebar.vue';
+import Sidebar from '@/components/sidebar/Sidebar.vue';
 import Header from '@/components/layout/Header.vue';
 import Main from '@/components/layout/Main.vue';
 import { useDomainStore } from '@/stores/domainStore';
@@ -52,6 +52,7 @@ onMounted(async () => {
   .el-aside {
     height: 100vh; // 固定侧边栏为视口高度
     overflow: hidden; // 禁止外层滚动条出现
+    max-width: 30vw;
   }
 
   .el-main {

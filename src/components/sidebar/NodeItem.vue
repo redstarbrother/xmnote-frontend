@@ -13,29 +13,29 @@
         <!-- 使用 Element Plus 下拉菜单替代手写气泡 -->
         <el-dropdown @command="onCommand" trigger="click">
           <span class="option-more">
-            <el-icon>
+            <el-icon size="12">
               <MoreFilled color="#868684" />
             </el-icon>
           </span>
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item v-if="isFolder" command="addFolder">
-                <el-icon>
+                <el-icon size="12">
                   <Folder />
                 </el-icon> 新增目录
               </el-dropdown-item>
               <el-dropdown-item v-if="isFolder" command="addDoc">
-                <el-icon>
+                <el-icon size="12">
                   <Document />
                 </el-icon> 新增文档
               </el-dropdown-item>
               <el-dropdown-item command="rename">
-                <el-icon>
+                <el-icon size="12">
                   <EditPen />
                 </el-icon> 重命名
               </el-dropdown-item>
               <el-dropdown-item command="delete">
-                <el-icon>
+                <el-icon size="12">
                   <Delete color="#F56C6C" />
                 </el-icon> 删除
               </el-dropdown-item>
@@ -43,19 +43,21 @@
           </template>
         </el-dropdown>
         <span class="option-switch" v-if="isFolder">
-          <el-icon>
+          <el-icon size="12">
             <ArrowDownBold color="#868684" v-if="expanded" />
             <ArrowLeftBold color="#868684" v-else />
           </el-icon>
         </span>
       </div>
     </div>
-    <div v-if="expanded">
-      <NodeItem v-for="child in item.child" :key="child.id" :item="{
-        ...child,
-        depth: (nodeInfo.depth || 0) + 1
-      }" />
-    </div>
+    <el-collapse-transition>
+      <div v-if="expanded">
+        <NodeItem v-for="child in item.child" :key="child.id" :item="{
+          ...child,
+          depth: (nodeInfo.depth || 0) + 1
+        }" />
+      </div>
+    </el-collapse-transition>
   </div>
 </template>
 
@@ -268,7 +270,7 @@ const updateNode = async () => {
   cursor: pointer;
 
   .selected {
-    background-color: #e8e8e7;
+    background-color: #f8f9fa;
   }
 
   .item-container {
@@ -276,8 +278,9 @@ const updateNode = async () => {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    height: 20px;
-    padding: 5px 3px;
+    // box-sizing: border-box;
+    // height: 30px;
+    padding: 8px 12px;
     // 避免用户选中文字
     user-select: none;
     border-radius: 4px;
@@ -286,6 +289,7 @@ const updateNode = async () => {
     .item-info {
       display: flex;
       align-items: center;
+      height: 24px;
 
       .item-info-logo {
         display: flex;
@@ -298,7 +302,7 @@ const updateNode = async () => {
 
       .truncate {
         color: #5f5f5b;
-        max-width: 160px;
+        // max-width: 160px; // 移除固定宽度限制，使其自适应
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -316,7 +320,7 @@ const updateNode = async () => {
     }
 
     &:hover {
-      background-color: #e8e8e7;
+      background-color: #f8f9fa;
       transition: all 0.5s ease;
 
       .item-option {
@@ -341,6 +345,7 @@ const updateNode = async () => {
     transition: all 0.5s ease;
     opacity: 0;
     padding-right: 5px;
+    max-height: 18px;
 
     span {
       padding: 3px;
