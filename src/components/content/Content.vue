@@ -2,15 +2,12 @@
     <div class="content-container">
         <div class="content-title">
             <div class="logo">{{ logo }}</div>
-            <input class="content-title-input" v-model="title" placeholder="请输入标题" @keyup.enter="handleEnterTitle" />
+            <textarea class="content-title-input" ref="titleInputRef" v-model="title" placeholder="请输入标题" maxlength="50"
+                @input="resize" @keyup.enter="handleEnterTitle" rows="1" />
         </div>
         <div class="content-editor">
-            <!-- <XmEditor v-bind="editorProps" v-model:content="content"/> -->
             <div id="xm-editor"> </div>
         </div>
-        <!-- <div class="content-footer">
-            <Footer />
-        </div> -->
     </div>
 </template>
 
@@ -18,7 +15,6 @@
 import { ref, computed, watch, nextTick, onMounted } from "vue";
 import { XmEditor, Extensions, Presets } from "@putanut/xm-editor";
 import "@putanut/xm-editor/xm-editor.css"
-import ContentWelcome from "@/components/welcome/ContentWelcome.vue";
 import { useDocumentStore } from "@/stores/documentStore";
 import { useDomainStore } from "@/stores/domainStore";
 import {
@@ -31,7 +27,7 @@ import { ElMessage } from "element-plus";
 const documentStore = useDocumentStore();
 const documentId = computed(() => documentStore.getDocumentId());
 const domainStore = useDomainStore();
-const editorInitialized = ref(false);
+const titleInputRef = ref(null);
 // 内容修改回调方法
 const handleEditorChange = () => {
     if (initializing.value) return;
@@ -40,6 +36,15 @@ const handleEditorChange = () => {
 };
 
 console.log("Presets:", Presets);
+
+// 调整标题输入框高度
+const resize = async () => {
+    await nextTick()
+    const el = titleInputRef.value
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = el.scrollHeight + 'px'
+}
 
 let editor = null;
 
@@ -71,6 +76,7 @@ onMounted(() => {
             backgroundColorOnFocus: "#f8f9fa",
         }),
     });
+    resize();
 })
 
 
@@ -164,6 +170,8 @@ watch(
         } else {
             title.value = response.data.title || "";
             logo.value = response.data.logo || "📝";
+            // 数据加载完成后，调整标题输入框高度
+            resize();
             let parsed = {};
             try {
                 const raw = response.data.content;
@@ -187,10 +195,10 @@ watch(
 <style lang="scss" scoped>
 .content-container {
     width: 70%;
-    
+
     .content-title {
         width: 100%;
-        height: 60px; // 固定高度
+        height: auto; // 固定高度
         flex-shrink: 0;
         display: flex;
         align-items: flex-start;
@@ -211,12 +219,19 @@ watch(
 
         .content-title-input {
             width: 100%;
+            height: auto;
+            resize: none;
+            /* 禁止拖拽 */
+            line-height: 1.5;
+            box-sizing: border-box;
+            // width: 100%;
             font-size: 40px;
             font-weight: 600;
-            height: 100%;
+            // height: 100%;
             border: none;
             outline: none;
             background-color: #f8f9fa;
+            overflow: hidden;
 
             &::placeholder {
                 color: #bcbcb8;

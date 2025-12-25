@@ -22,7 +22,6 @@
 <script setup>
 import { computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import Breadcrumb from '@/components/common/header/Breadcrumb.vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useDomainStore } from '@/stores/domainStore'
 
