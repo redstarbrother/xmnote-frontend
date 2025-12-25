@@ -1,8 +1,11 @@
 <template>
     <div class="breadcrumb-container">
-        <el-breadcrumb separator="/">
+        <el-breadcrumb separator=">">
+            <el-breadcrumb-item >
+                <span class="breadcrumb-item">我的笔记</span>
+            </el-breadcrumb-item>
             <el-breadcrumb-item v-for="item in breadcrumbPath" :key="item.id">
-                {{ item.title }}
+                <span class="breadcrumb-item">{{ item.title }}</span>
             </el-breadcrumb-item>
         </el-breadcrumb>
     </div>
@@ -27,5 +30,11 @@ const breadcrumbPath = computed(() => {
 .breadcrumb-container {
     padding: 16px;
     height: 100%;
+
+    .breadcrumb-item {
+        font-size: 12px;
+        color: #909399;
+        user-select: none;
+    }
 }
 </style>

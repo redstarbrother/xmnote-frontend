@@ -12,6 +12,9 @@
           <el-main>
             <Main />
           </el-main>
+          <el-footer>
+            <Footer />
+          </el-footer>
         </div>
         <div class="content-container" v-else>
           <ContentWelcome />
@@ -26,6 +29,7 @@ import { onMounted, computed } from "vue";
 import Sidebar from '@/components/sidebar/Sidebar.vue';
 import Header from '@/components/layout/Header.vue';
 import Main from '@/components/layout/Main.vue';
+import Footer from '@/components/layout/Footer.vue';
 import ContentWelcome from "@/components/welcome/ContentWelcome.vue";
 import { useDomainStore } from '@/stores/domainStore';
 import { getDomainTree } from '@/api/folder';
@@ -58,11 +62,30 @@ onMounted(async () => {
   .el-container {
     height: 100%;
     width: 100%;
-    background-color: #f8f9fa; 
+    background-color: #f8f9fa;
+
     // display: flex;
     // justify-content: center;
     .content-container {
       width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background-color: #fff;
+
+      .el-header {
+          border-bottom: 1px solid rgb(233, 236, 239);
+      }
+      .el-main {
+        background-color: #f8f9fa;
+      }
+      .el-footer {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 40px;
+        border-top: 1px solid rgb(233, 236, 239);
+      }
     }
   }
 
