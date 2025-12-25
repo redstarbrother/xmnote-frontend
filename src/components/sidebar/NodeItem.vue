@@ -2,7 +2,15 @@
   <div class="node-item">
     <div class="item-container" @click="clickNode" :class="{ selected: isSelected }">
       <div class="item-info">
-        <span class="item-info-logo" :style="{ paddingLeft: `${(nodeInfo.depth || 0) * 16}px` }">{{ item.logo }}</span>
+        <EmojiPicker :modelValue="item.logo" @select="onLogoSelect">
+          <template #reference>
+            <span class="item-info-logo" :style="{ paddingLeft: `${(nodeInfo.depth || 0) * 16}px` }" @click.stop>
+              <span class="logo-inner">
+                {{ item.logo }}
+              </span>
+            </span>
+          </template>
+        </EmojiPicker>
         <span v-if="!isRenaming" class="truncate" :class="{ file: isFolder }">
           {{ nodeInfo.title }}
         </span>
@@ -65,11 +73,12 @@
 import { NodeType } from "@/enums/NodeType";
 import { ref, onMounted, nextTick, computed, watch } from "vue";
 import { useDocumentStore } from "@/stores/documentStore";
-import { ArrowDownBold, ArrowLeftBold } from "@element-plus/icons-vue";
+import { ArrowDownBold, ArrowLeftBold, MoreFilled, Folder, Document, EditPen, Delete } from "@element-plus/icons-vue";
 import { createFolder, updateFolder, deleteFolder } from "@/api/folder";
 import { createDocument, updateDocument, deleteDocument } from "@/api/doc";
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useDomainStore } from '@/stores/domainStore';
+import EmojiPicker from "@/components/common/EmojiPicker.vue";
 
 // props.item:
 // {
@@ -96,6 +105,39 @@ const documentStore = useDocumentStore();
 // 展开状态
 const expanded = ref(false);
 const nodeInfo = ref(props.item);
+
+const onLogoSelect = async (newLogo) => {
+  // 1. Update store (optimistic)
+  domainStore.updateNode(props.item.id, { logo: newLogo });
+  
+  // 2. Update backend
+  const params = {
+    id: props.item.id,
+    title: props.item.title,
+    folderId: props.item.parentId,
+    logo: newLogo,
+    domainId: props.item.domainId
+  };
+
+  let response;
+  try {
+    if (isFolder.value) {
+      response = await updateFolder({
+        id: params.id,
+        logo: params.logo
+      });
+    } else {
+      response = await updateDocument(params);
+    }
+
+    if (response?.code !== 200) {
+       ElMessage.error("图标更新失败");
+    }
+  } catch (e) {
+    ElMessage.error("图标更新出错: " + e.message);
+  }
+};
+
 
 // 计算属性：减少模板判断
 const isFolder = computed(() => nodeInfo.value.type === NodeType.FOLDER);
@@ -298,6 +340,16 @@ const updateNode = async () => {
         line-height: 1;
         margin-right: 5px;
         transform: translateY(-2px);
+
+        .logo-inner {
+          padding: 2px;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+
+          &:hover {
+            background-color: #e6e6e6;
+          }
+        }
       }
 
       .truncate {

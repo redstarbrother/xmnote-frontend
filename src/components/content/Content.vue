@@ -1,7 +1,11 @@
 <template>
     <div class="content-container">
         <div class="content-title">
-            <div class="logo">{{ logo }}</div>
+            <EmojiPicker v-model="logo" @select="changeLogo">
+                <template #reference>
+                    <div class="logo">{{ logo }}</div>
+                </template>
+            </EmojiPicker>
             <textarea class="content-title-input" ref="titleInputRef" v-model="title" placeholder="请输入标题" maxlength="50"
                 @input="resize" @keyup.enter="handleEnterTitle" rows="1" />
         </div>
@@ -23,6 +27,8 @@ import {
     uploadImage,
 } from "@/api/doc";
 import { ElMessage } from "element-plus";
+
+import EmojiPicker from "@/components/common/EmojiPicker.vue";
 
 const documentStore = useDocumentStore();
 const documentId = computed(() => documentStore.getDocumentId());
