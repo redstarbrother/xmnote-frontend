@@ -5,6 +5,7 @@
       <OnboardingChecklist />
       <ShortcutHints />
       <TipsSection />
+      <VersionUpdates />
     </div>
   </div>
 </template>
@@ -14,6 +15,7 @@ import WelcomeHero from './WelcomeHero.vue';
 import OnboardingChecklist from './OnboardingChecklist.vue';
 import ShortcutHints from './ShortcutHints.vue';
 import TipsSection from './TipsSection.vue';
+import VersionUpdates from './VersionUpdates.vue';
 </script>
 
 <style scoped lang="scss">
@@ -22,16 +24,18 @@ import TipsSection from './TipsSection.vue';
   flex-direction: column;
   align-items: center;
   width: 100%;
-  height: 100%;
+  // height: 100%;
   overflow: auto;
+  padding: 10vh 0;
 }
 
 .welcome-grid {
-  width: 60%;
+  width: 65%;
+  max-width: 1200px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-  gap: 16px;
+  gap: 24px;
+  margin-top: 24px;
 }
 
 @media (max-width: 1024px) {

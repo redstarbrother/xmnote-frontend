@@ -1,19 +1,11 @@
 <template>
   <div class="main-container">
-    <ContentWelcome v-if="!showContent" />
-    <Content v-else />
+    <Content />
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
-import ContentWelcome from "@/components/welcome/ContentWelcome.vue";
 import Content from "@/components/content/Content.vue";
-import { useDocumentStore } from "@/stores/documentStore";
-
-const documentStore = useDocumentStore();
-const showContent = computed(() => documentStore.getDocumentId() !== "");
-
 </script>
 
 <style lang="scss">

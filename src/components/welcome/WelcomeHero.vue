@@ -24,8 +24,9 @@ import { Plus, Collection } from '@element-plus/icons-vue';
 .hero {
   width: 100%;
   max-width: 800px;
+  max-height: 80vh;
   text-align: center;
-  margin: 6vh auto 4vh;
+  // margin: 4vh auto;
   padding: 0 20px;
 }
 

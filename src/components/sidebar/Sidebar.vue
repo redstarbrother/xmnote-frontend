@@ -7,7 +7,7 @@
       </div>
       <div class="quick-area">
         <!-- 快捷操作区域内容 -->
-        <QuickArea />
+        <!-- <QuickArea /> -->
       </div>
       <div class="document-area">
         <!-- <div class="search-area">
@@ -148,7 +148,7 @@ const addFolderNode = () => {
   height: 100vh; // 固定侧边栏高度为视口高度
   overflow: hidden; // 外层不出现滚动条
   background-color: #ffffff;
-  border-color: rgb(233 236 239 / 1);
+  border-right: 1px solid rgb(233 236 239 / 1);
   transition: width 0.3s ease-in-out; // 添加过渡效果
 
   // ::after, ::before {

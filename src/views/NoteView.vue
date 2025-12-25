@@ -4,26 +4,36 @@
       <el-aside width="auto">
         <Sidebar />
       </el-aside>
-      <el-container style="background-color: #f8f9fa;">
-        <el-header>
-          <Header />
-        </el-header>
-        <el-main>
-          <Main />
-        </el-main>
+      <el-container>
+        <div class="content-container" v-if="showContent">
+          <el-header>
+            <Header />
+          </el-header>
+          <el-main>
+            <Main />
+          </el-main>
+        </div>
+        <div class="content-container" v-else>
+          <ContentWelcome />
+        </div>
       </el-container>
     </el-container>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue";
 import Sidebar from '@/components/sidebar/Sidebar.vue';
 import Header from '@/components/layout/Header.vue';
 import Main from '@/components/layout/Main.vue';
+import ContentWelcome from "@/components/welcome/ContentWelcome.vue";
 import { useDomainStore } from '@/stores/domainStore';
 import { getDomainTree } from '@/api/folder';
 import { getUserIdFromToken } from '@/utils/jwtUtil';
+import { useDocumentStore } from "@/stores/documentStore";
+
+const documentStore = useDocumentStore();
+const showContent = computed(() => documentStore.getDocumentId() !== "");
 
 const domainStore = useDomainStore();
 
@@ -47,6 +57,13 @@ onMounted(async () => {
 
   .el-container {
     height: 100%;
+    width: 100%;
+    background-color: #f8f9fa; 
+    // display: flex;
+    // justify-content: center;
+    .content-container {
+      width: 100%;
+    }
   }
 
   .el-aside {

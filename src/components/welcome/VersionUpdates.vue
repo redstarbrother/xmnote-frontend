@@ -2,28 +2,20 @@
   <section class="card">
     <div class="header">
       <div class="icon-wrapper">
-        <el-icon><House /></el-icon>
+        <el-icon><Place /></el-icon>
       </div>
-      <h3>技巧与推荐</h3>
+      <h3>版本动态</h3>
     </div>
-    <ul class="tips">
-      <li v-for="(tip, index) in tips" :key="index">
-        <el-icon class="check-icon"><CircleCheck /></el-icon>
-        <span>{{ tip }}</span>
-      </li>
-    </ul>
+    <div class="content">
+      <div class="date">2025年12月23日 更新</div>
+      <p>新增 AI 智能纠错功能，极大提升内容润色效率。同时优化了移动端离线保存的稳定性。</p>
+      <a href="#" class="link">查看完整日志 →</a>
+    </div>
   </section>
 </template>
 
 <script setup>
-import { House, CircleCheck } from '@element-plus/icons-vue'
-import { ref } from 'vue'
-
-const tips = ref([
-  '支持全功能 Markdown 语法与代码高亮渲染',
-  '直接粘贴剪切板图片，自动上传并插入文档',
-  '通过拖拽侧边栏轻松管理文件夹与笔记层级'
-])
+import { Place } from '@element-plus/icons-vue'
 </script>
 
 <style scoped lang="scss">
@@ -62,32 +54,37 @@ const tips = ref([
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: #f0fdf4;
+  background: #ecf5ff;
   border-radius: 10px;
-  color: #22c55e;
+  color: #409eff;
   font-size: 20px;
 }
 
-.tips {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.content {
+  .date {
+    color: #409eff;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
 
-  li {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
+  p {
     color: #4b5563;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.6;
+    margin: 0 0 16px 0;
+  }
 
-    .check-icon {
-      color: #409eff;
-      margin-top: 3px;
-      flex-shrink: 0;
+  .link {
+    color: #409eff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    
+    &:hover {
+      text-decoration: underline;
     }
   }
 }
