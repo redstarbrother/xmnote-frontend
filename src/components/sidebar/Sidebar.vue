@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar-container" :style="{ width: containerWidth }">
     <div class="sidebar-wrapper" ref="wrapperRef">
-      <div class="logo-area">
+      <div class="logo-area" @click="handleLogoClick">
         <img src="/logo.svg" alt="logo" class="logo" />
         <div class="highlight">西木笔记</div>
       </div>
@@ -44,11 +44,13 @@ import NoteItem from "@/components/sidebar/NodeItem.vue";
 import UserArea from "@/components/sidebar/UserArea.vue";
 import { Search, Plus } from "@element-plus/icons-vue";
 import { useDomainStore } from "@/stores/domainStore";
+import { useDocumentStore } from "@/stores/documentStore";
 import { createFolder } from "@/api/folder";
 
 const searchContent = ref("");
 
 const domainStore = useDomainStore();
+const documentStore = useDocumentStore();
 
 const domainTree = computed(() => domainStore.getDomainTree());
 
@@ -56,6 +58,13 @@ const domainTree = computed(() => domainStore.getDomainTree());
 const wrapperRef = ref(null);
 const containerWidth = ref("240px");
 let resizeObserver = null;
+
+// 处理logo点击事件
+const handleLogoClick = () => {
+  // 切换侧边栏展开状态
+  documentStore.reset();
+  console.log("documentStore:", documentStore);
+};
 
 const updateWidth = () => {
   if (wrapperRef.value) {
@@ -173,6 +182,7 @@ const addFolderNode = () => {
     align-items: center;
     justify-content: flex-start;
     flex-wrap: nowrap;
+    cursor: pointer;
     gap: 10px;
     padding: 24px;
     transition: transform 0.3s ease;

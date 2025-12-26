@@ -17,8 +17,9 @@
         <input v-else ref="inputRef" v-model="editTitle" class="rename-input" @keydown.enter="confirmRename"
           @blur="confirmRename" @keydown.esc="cancelRename" />
       </div>
-      <span class="child-count" v-if="isFolder">{{ (nodeInfo.child && nodeInfo.child.length) || 0 }}</span>
-      <div class="item-option">
+      <div class="node-actions">
+        <span class="child-count" v-if="isFolder">{{ (nodeInfo.child && nodeInfo.child.length) || 0 }}</span>
+        <div class="item-option">
         <!-- 使用 Element Plus 下拉菜单替代手写气泡 -->
         <el-dropdown @command="onCommand" trigger="click">
           <span class="option-more">
@@ -59,15 +60,16 @@
         </span>
       </div>
     </div>
-    <el-collapse-transition>
-      <div v-if="expanded">
-        <NodeItem v-for="child in item.child" :key="child.id" :item="{
-          ...child,
-          depth: (nodeInfo.depth || 0) + 1
-        }" />
-      </div>
-    </el-collapse-transition>
+    </div>
   </div>
+  <el-collapse-transition>
+    <div v-if="expanded">
+      <NodeItem v-for="child in item.child" :key="child.id" :item="{
+        ...child,
+        depth: (nodeInfo.depth || 0) + 1
+      }" />
+    </div>
+  </el-collapse-transition>
 </template>
 
 <script setup>
@@ -110,7 +112,7 @@ const nodeInfo = ref(props.item);
 const onLogoSelect = async (newLogo) => {
   // 1. Update store (optimistic)
   domainStore.updateNode(props.item.id, { logo: newLogo });
-  
+
   // 2. Update backend
   const params = {
     id: props.item.id,
@@ -132,7 +134,7 @@ const onLogoSelect = async (newLogo) => {
     }
 
     if (response?.code !== 200) {
-       ElMessage.error("图标更新失败");
+      ElMessage.error("图标更新失败");
     }
   } catch (e) {
     ElMessage.error("图标更新出错: " + e.message);
@@ -375,24 +377,44 @@ const updateNode = async () => {
     .child-count {
       font-size: 12px;
       color: #909399;
-      margin-right: 15px;
+      // margin-right: 15px;
       background-color: #f8f9fa;
       padding: 3px 6px;
       border-radius: 3px;
     }
 
+    .node-actions {
+      display: grid;
+      grid-template-areas: "stack";
+      align-items: center;
+      justify-items: end;
+      flex-shrink: 0;
+
+      > * {
+        grid-area: stack;
+      }
+    }
+
     &.is-folder {
+      .node-actions {
+        min-width: 46px;
+      }
+
+      .child-count {
+        transition: opacity 0.2s;
+      }
+
       .item-option {
-        display: none;
+        pointer-events: none;
       }
 
       &:hover {
         .child-count {
-          display: none;
+          opacity: 0;
         }
 
         .item-option {
-          display: flex;
+          pointer-events: auto;
         }
       }
     }
@@ -422,7 +444,6 @@ const updateNode = async () => {
     gap: 5px;
     transition: all 0.5s ease;
     opacity: 0;
-    padding-right: 5px;
     max-height: 18px;
 
     span {
