@@ -1,6 +1,6 @@
 <template>
   <div class="node-item">
-    <div class="item-container" @click="clickNode" :class="{ selected: isSelected }">
+    <div class="item-container" @click="clickNode" :class="{ selected: isSelected, 'is-folder': isFolder }">
       <div class="item-info">
         <EmojiPicker :modelValue="item.logo" @select="onLogoSelect">
           <template #reference>
@@ -17,6 +17,7 @@
         <input v-else ref="inputRef" v-model="editTitle" class="rename-input" @keydown.enter="confirmRename"
           @blur="confirmRename" @keydown.esc="cancelRename" />
       </div>
+      <span class="child-count" v-if="isFolder">{{ (nodeInfo.child && nodeInfo.child.length) || 0 }}</span>
       <div class="item-option">
         <!-- 使用 Element Plus 下拉菜单替代手写气泡 -->
         <el-dropdown @command="onCommand" trigger="click">
@@ -368,6 +369,31 @@ const updateNode = async () => {
         border-radius: 4px;
         width: 100%;
         color: #5f5f5b;
+      }
+    }
+
+    .child-count {
+      font-size: 12px;
+      color: #909399;
+      margin-right: 15px;
+      background-color: #f8f9fa;
+      padding: 3px 6px;
+      border-radius: 3px;
+    }
+
+    &.is-folder {
+      .item-option {
+        display: none;
+      }
+
+      &:hover {
+        .child-count {
+          display: none;
+        }
+
+        .item-option {
+          display: flex;
+        }
       }
     }
 
