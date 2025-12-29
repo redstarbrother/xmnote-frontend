@@ -1,618 +1,1073 @@
 <template>
   <div v-if="dialogVisible" class="settings-overlay" @click="handleClose">
-    <div class="settings-dialog" role="dialog" aria-modal="true" @click.stop>
-      <div class="settings-header">
-        <div class="settings-title">设置</div>
-        <button class="settings-close" @click="handleClose">×</button>
-      </div>
-      <div class="settings-body">
-        <div class="settings-sidebar">
-          <div class="tab-item" :class="{ 'is-active': activeTab === 'site' }" @click="scrollTo('site')">网站设置</div>
-          <div class="tab-item" :class="{ 'is-active': activeTab === 'editor' }" @click="scrollTo('editor')">编辑器设置</div>
-          <div class="tab-item" :class="{ 'is-active': activeTab === 'user' }" @click="scrollTo('user')">用户设置</div>
+    <div class="settings-container" @click.stop>
+      <!-- 左侧导航栏 -->
+      <div class="settings-sidebar">
+        <div class="sidebar-top">
+          <div class="sidebar-header">
+            <el-icon class="header-icon" :size="20"><Setting /></el-icon>
+            <span class="header-title">设置</span>
+          </div>
+          
+          <div class="sidebar-menu">
+            <div
+              v-for="tab in tabs"
+              :key="tab.id"
+              class="menu-item"
+              :class="{ active: activeTab === tab.id }"
+              @click="activeTab = tab.id"
+            >
+              <el-icon class="menu-icon" :size="18"><component :is="tab.icon" /></el-icon>
+              <span class="menu-label">{{ tab.label }}</span>
+            </div>
+          </div>
         </div>
-        <div class="settings-content" ref="contentRef" @scroll="onContentScroll">
-          <div ref="siteRef">
-        <el-form :model="settings.site" label-width="120px" label-position="top">
-          <el-form-item label="网站名称">
-            <el-input v-model="settings.site.siteName" />
-          </el-form-item>
-          <el-form-item label="Logo URL">
-            <el-input v-model="settings.site.logoUrl" />
-          </el-form-item>
-          <el-form-item label="Favicon URL">
-            <el-input v-model="settings.site.faviconUrl" />
-          </el-form-item>
-          <el-form-item label="网站描述">
-            <el-input v-model="settings.site.description" type="textarea" />
-          </el-form-item>
-          
-          <el-divider content-position="left">登录设置</el-divider>
-          <el-form-item label="允许注册">
-            <el-switch v-model="settings.site.allowRegister" />
-          </el-form-item>
-          <el-form-item label="登录方式">
-            <el-select v-model="settings.site.loginMethod">
-              <el-option label="邮箱" value="email" />
-              <el-option label="用户名" value="username" />
-              <el-option label="手机号" value="phone" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="启用两步验证">
-            <el-switch v-model="settings.site.enable2FA" />
-          </el-form-item>
-          <el-form-item label="允许第三方登录">
-            <el-switch v-model="settings.site.allowThirdPartyLogin" />
-          </el-form-item>
-          
-          <el-divider content-position="left">同步设置</el-divider>
-          <el-form-item label="存储模式">
-            <el-select v-model="settings.site.storageMode">
-              <el-option label="自托管" value="self_hosted" />
-              <el-option label="云存储" value="cloud" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="自动同步">
-            <el-switch v-model="settings.site.autoSync" />
-          </el-form-item>
-          <el-form-item label="同步间隔(分钟)">
-            <el-input-number v-model="settings.site.syncInterval" :min="1" :max="60" />
-          </el-form-item>
-          
-          <el-divider content-position="left">主题设置</el-divider>
-          <el-form-item label="主题模式">
-            <el-select v-model="settings.site.themeMode">
-              <el-option label="自动" value="auto" />
-              <el-option label="亮色" value="light" />
-              <el-option label="暗色" value="dark" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="字体">
-            <el-input v-model="settings.site.fontFamily" />
-          </el-form-item>
-          <el-form-item label="字体大小">
-            <el-input-number v-model="settings.site.fontSize" :min="12" :max="24" />
-          </el-form-item>
-          <el-form-item label="主题色">
-            <el-color-picker v-model="settings.site.accentColor" />
-          </el-form-item>
-          <el-form-item label="布局模式">
-            <el-select v-model="settings.site.layoutMode">
-              <el-option label="经典" value="classic" />
-              <el-option label="现代" value="modern" />
-              <el-option label="紧凑" value="compact" />
-            </el-select>
-          </el-form-item>
-          
-          <el-divider content-position="left">安全设置</el-divider>
-          <el-form-item label="启用加密">
-            <el-switch v-model="settings.site.enableEncryption" />
-          </el-form-item>
-          <el-form-item label="自动锁定时间(分钟)">
-            <el-input-number v-model="settings.site.autoLockTime" :min="1" :max="60" />
-          </el-form-item>
-          <el-form-item label="数据备份">
-            <el-switch v-model="settings.site.dataBackup" />
-          </el-form-item>
-          <el-form-item label="备份计划">
-            <el-input v-model="settings.site.backupSchedule" placeholder="Cron表达式，例如: 0 2 * * *" />
-          </el-form-item>
-          <el-form-item label="启用邮件通知">
-            <el-switch v-model="settings.site.enableEmailNotify" />
-          </el-form-item>
-          <el-form-item label="订阅新闻通讯">
-            <el-switch v-model="settings.site.newsletterOptIn" />
-          </el-form-item>
-        </el-form>
-          </div>
-      
-          <div ref="editorRef">
-        <el-form :model="settings.editor" label-width="120px" label-position="top">
-          <el-form-item label="显示工具栏">
-            <el-switch v-model="settings.editor.showToolbar" />
-          </el-form-item>
-          <el-form-item label="工具栏项目">
-            <el-select v-model="settings.editor.toolbarItems" multiple>
-              <el-option label="加粗" value="bold" />
-              <el-option label="斜体" value="italic" />
-              <el-option label="下划线" value="underline" />
-              <el-option label="删除线" value="strike" />
-              <el-option label="标题" value="heading" />
-              <el-option label="无序列表" value="bulletList" />
-              <el-option label="有序列表" value="orderedList" />
-              <el-option label="引用" value="blockquote" />
-              <el-option label="代码块" value="codeBlock" />
-              <el-option label="图片" value="image" />
-              <el-option label="表格" value="table" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="自动保存">
-            <el-switch v-model="settings.editor.autosave" />
-          </el-form-item>
-          <el-form-item label="自动保存间隔(秒)">
-            <el-input-number v-model="settings.editor.autosaveInterval" :min="5" :max="60" />
-          </el-form-item>
-          <el-form-item label="显示行号">
-            <el-switch v-model="settings.editor.showLineNumbers" />
-          </el-form-item>
-          <el-form-item label="自动换行">
-            <el-switch v-model="settings.editor.wordWrap" />
-          </el-form-item>
-          
-          <el-divider content-position="left">编辑模式</el-divider>
-          <el-form-item label="专注模式">
-            <el-switch v-model="settings.editor.focusMode" />
-          </el-form-item>
-          <el-form-item label="禅模式">
-            <el-switch v-model="settings.editor.zenMode" />
-          </el-form-item>
-          <el-form-item label="拼写检查">
-            <el-switch v-model="settings.editor.spellCheck" />
-          </el-form-item>
-          <el-form-item label="预览分割方向">
-            <el-select v-model="settings.editor.markdownPreviewSplit">
-              <el-option label="垂直" value="vertical" />
-              <el-option label="水平" value="horizontal" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="默认文档类型">
-            <el-select v-model="settings.editor.defaultDocType">
-              <el-option label="笔记" value="note" />
-              <el-option label="文档" value="document" />
-              <el-option label="待办" value="todo" />
-            </el-select>
-          </el-form-item>
-          
-          <el-divider content-position="left">扩展设置</el-divider>
-          <el-form-item label="启用的扩展">
-            <el-select v-model="settings.editor.enabledExtensions" multiple>
-              <el-option label="加粗" value="bold" />
-              <el-option label="斜体" value="italic" />
-              <el-option label="标题" value="heading" />
-              <el-option label="任务列表" value="taskList" />
-              <el-option label="图片" value="image" />
-              <el-option label="代码块" value="codeBlock" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="图片上传模式">
-            <el-select v-model="settings.editor.imageUploadMode">
-              <el-option label="对象存储" value="oss" />
-              <el-option label="本地存储" value="local" />
-              <el-option label="外部链接" value="external" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="自动建议标签">
-            <el-switch v-model="settings.editor.autosuggestTags" />
-          </el-form-item>
-          <el-form-item label="启用AI助手">
-            <el-switch v-model="settings.editor.enableAIAssistant" />
-          </el-form-item>
-          <el-form-item label="AI模型">
-            <el-select v-model="settings.editor.aiModel">
-              <el-option label="DeepSeek Chat" value="deepseek-chat" />
-              <el-option label="GPT-4" value="gpt-4" />
-              <el-option label="Claude" value="claude" />
-            </el-select>
-          </el-form-item>
-          
-          <el-divider content-position="left">导出与分享</el-divider>
-          <el-form-item label="默认导出格式">
-            <el-select v-model="settings.editor.defaultExportFormat">
-              <el-option label="Markdown" value="md" />
-              <el-option label="PDF" value="pdf" />
-              <el-option label="HTML" value="html" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="允许公开分享">
-            <el-switch v-model="settings.editor.allowPublicShare" />
-          </el-form-item>
-          <el-form-item label="水印文本">
-            <el-input v-model="settings.editor.watermarkText" />
-          </el-form-item>
-        </el-form>
-          </div>
-      
-          <div ref="userRef">
-        <el-form :model="settings.user" label-width="120px" label-position="top">
-          <el-form-item label="语言">
-            <el-select v-model="settings.user.language">
-              <el-option label="简体中文" value="zh-CN" />
-              <el-option label="English" value="en-US" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="时区">
-            <el-select v-model="settings.user.timezone">
-              <el-option label="亚洲/上海" value="Asia/Shanghai" />
-              <el-option label="美国/纽约" value="America/New_York" />
-              <el-option label="欧洲/伦敦" value="Europe/London" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="编辑器主题">
-            <el-select v-model="settings.user.editorTheme">
-              <el-option label="Solarized Dark" value="solarized-dark" />
-              <el-option label="Solarized Light" value="solarized-light" />
-              <el-option label="GitHub" value="github" />
-              <el-option label="VS Code" value="vscode" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="自定义CSS">
-            <el-input v-model="settings.user.customCss" type="textarea" rows="4" />
-          </el-form-item>
-          <el-form-item label="默认文件夹">
-            <el-input v-model="settings.user.defaultFolder" />
-          </el-form-item>
-          <el-form-item label="最近文档数量">
-            <el-input-number v-model="settings.user.recentDocsCount" :min="5" :max="30" />
-          </el-form-item>
-          <el-form-item label="收藏标签">
-            <el-select v-model="settings.user.favoriteTags" multiple allow-create filterable>
-              <el-option v-for="tag in settings.user.favoriteTags" :key="tag" :label="tag" :value="tag" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="启用快捷键">
-            <el-switch v-model="settings.user.enableShortcuts" />
-          </el-form-item>
-        </el-form>
+
+        <div class="sidebar-bottom">
+          <div class="back-btn" @click="handleClose">
+            <el-icon><ArrowLeft /></el-icon>
+            <span>返回应用</span>
           </div>
         </div>
       </div>
-      <div class="settings-footer">
-        <el-button @click="cancel">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
+
+      <!-- 右侧内容区 -->
+      <div class="settings-content">
+        <div class="content-header">
+          <div class="header-info">
+            <h2 class="content-title">{{ currentTabInfo.label }}</h2>
+            <p class="content-desc">{{ currentTabInfo.desc }}</p>
+          </div>
+          <button class="close-btn" @click="handleClose">
+            <el-icon><Close /></el-icon>
+          </button>
+        </div>
+
+        <div class="content-body">
+          <template v-for="(group, gIndex) in currentGroups" :key="gIndex">
+            <div v-if="!group.visibleWhen || group.visibleWhen(settings)" class="setting-group">
+              <div v-if="group.title" class="group-title">{{ group.title }}</div>
+              
+              <!-- Grid layout container -->
+              <div class="group-items-grid">
+                <template v-for="(item, iIndex) in group.items" :key="iIndex">
+                  <div 
+                    v-if="!item.visibleWhen || item.visibleWhen(settings)" 
+                    class="setting-item-wrapper"
+                    :class="[`col-span-${item.colSpan || 1}`]"
+                  >
+                    <div class="setting-item">
+                      <div v-if="item.label" class="item-label-row">
+                        <div class="item-label">{{ item.label }}</div>
+                        <div v-if="item.type === 'slider'" class="item-value-display">{{ settings[item.section][item.key] }}px</div>
+                      </div>
+                      <div v-if="item.desc && item.type === 'button'" class="item-desc-text">{{ item.desc }}</div>
+                      
+                      <div class="item-control">
+                        <!-- 头像 Avatar -->
+                        <div v-if="item.type === 'avatar'" class="avatar-uploader">
+                          <el-avatar :size="64" :src="settings[item.section][item.key]" />
+                          <div class="avatar-actions">
+                            <el-button type="primary" plain size="small">上传头像</el-button>
+                            <span class="avatar-tip">支持 JPG, PNG 格式</span>
+                          </div>
+                        </div>
+
+                        <!-- 设备列表 Device List -->
+                        <div v-else-if="item.type === 'device-list'" class="device-list">
+                           <div v-for="dev in settings[item.section][item.key]" :key="dev.id" class="device-item">
+                             <div class="device-icon">
+                               <el-icon :size="24"><Monitor /></el-icon>
+                             </div>
+                             <div class="device-info">
+                               <div class="device-name">
+                                 {{ dev.name }}
+                                 <el-tag v-if="dev.current" size="small" type="success" effect="plain">当前设备</el-tag>
+                               </div>
+                               <div class="device-time">最近登录: {{ dev.time }}</div>
+                             </div>
+                             <div class="device-action">
+                               <el-button v-if="!dev.current" type="danger" link size="small" @click="handleForceLogout(dev)">强制下线</el-button>
+                             </div>
+                           </div>
+                        </div>
+
+                        <!-- 单选组 Radio Group -->
+                        <el-radio-group 
+                          v-else-if="item.type === 'radio'"
+                          v-model="settings[item.section][item.key]"
+                        >
+                          <el-radio v-for="opt in item.options" :key="opt.value" :value="opt.value" :label="opt.value">{{ opt.label }}</el-radio>
+                        </el-radio-group>
+
+                        <!-- 分段控制器 Segmented Control -->
+                        <div v-else-if="item.type === 'segmented'" class="segmented-control">
+                          <div 
+                            v-for="opt in item.options" 
+                            :key="opt.value"
+                            class="segment-item"
+                            :class="{ active: settings[item.section][item.key] === opt.value }"
+                            @click="settings[item.section][item.key] = opt.value"
+                          >
+                            {{ opt.label }}
+                          </div>
+                        </div>
+
+                        <!-- 颜色选择 Color Circles -->
+                        <div v-else-if="item.type === 'color-circles'" class="color-control">
+                          <div class="color-circles">
+                            <div 
+                                v-for="color in item.options" 
+                                :key="color"
+                                class="color-circle"
+                                :class="{ active: settings[item.section][item.key] === color }"
+                                :style="{ backgroundColor: color }"
+                                @click="settings[item.section][item.key] = color"
+                            >
+                                <el-icon v-if="settings[item.section][item.key] === color" class="check-icon"><Check /></el-icon>
+                            </div>
+                          </div>
+                          <div class="custom-color-picker">
+                            <el-color-picker v-model="settings[item.section][item.key]" size="small" />
+                            <span class="custom-color-label">自定义</span>
+                          </div>
+                        </div>
+
+                        <!-- 下拉框 Select -->
+                        <el-select
+                          v-else-if="item.type === 'select'"
+                          v-model="settings[item.section][item.key]"
+                          :placeholder="item.placeholder"
+                          :multiple="item.multiple"
+                          style="width: 100%"
+                        >
+                          <el-option v-for="opt in item.options" :key="opt.value" :label="opt.label" :value="opt.value" />
+                        </el-select>
+
+                        <!-- 滑块 Slider -->
+                        <el-slider
+                          v-else-if="item.type === 'slider'"
+                          v-model="settings[item.section][item.key]"
+                          :min="item.min"
+                          :max="item.max"
+                          :step="item.step"
+                          :show-tooltip="false"
+                        />
+
+                        <!-- 开关 Switch -->
+                        <el-switch
+                          v-else-if="item.type === 'switch'"
+                          v-model="settings[item.section][item.key]"
+                        />
+
+                        <!-- 输入框 Input -->
+                        <el-input
+                          v-else-if="item.type === 'input'"
+                          v-model="settings[item.section][item.key]"
+                          :type="item.inputType || 'text'"
+                          :rows="item.rows"
+                          :placeholder="item.placeholder"
+                          :readonly="item.props?.readonly"
+                          :disabled="item.props?.disabled"
+                        />
+                         
+                         <!-- 按钮 Button -->
+                        <el-button
+                            v-else-if="item.type === 'button'"
+                            :type="item.props?.type"
+                            :plain="item.props?.plain"
+                            :danger="item.props?.danger"
+                            @click="handleAction(item)"
+                            style="width: 100%"
+                        >
+                            {{ item.buttonText }}
+                        </el-button>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="content-footer">
+            <span class="auto-save-text">所有设置将自动保存</span>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue";
-import { ElMessage } from "element-plus";
+import { ref, reactive, computed, onMounted, watch } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { 
+  User, 
+  Monitor, 
+  Edit, 
+  Files, 
+  Setting, 
+  Close, 
+  ArrowLeft,
+  Check,
+  Tools,
+  Iphone,
+  Download,
+  Delete,
+  MagicStick
+} from '@element-plus/icons-vue';
+import { useDebounceFn } from '@vueuse/core';
 
 // 对话框可见性
 const dialogVisible = ref(false);
-const activeTab = ref('site');
-const contentRef = ref(null);
-const siteRef = ref(null);
-const editorRef = ref(null);
-const userRef = ref(null);
+const activeTab = ref('account');
 
-// 设置数据
+// 基础配置数据结构
 const settings = reactive({
-  site: {
-    siteName: "西木笔记",
-    logoUrl: "/assets/logo.svg",
-    faviconUrl: "/favicon.ico",
-    description: "一个极简、安全、私密的笔记系统。",
-
-    allowRegister: true,
-    loginMethod: "email",
-    enable2FA: false,
-    allowThirdPartyLogin: true,
-
-    storageMode: "self_hosted",
-    autoSync: true,
-    syncInterval: 5,
-
-    themeMode: "auto",
-    fontFamily: "Inter, Noto Sans SC, sans-serif",
-    fontSize: 15,
-    accentColor: "#4A7B9D",
-    layoutMode: "classic",
-
-    enableEncryption: true,
-    autoLockTime: 10,
-    dataBackup: true,
-    backupSchedule: "0 2 * * *",
-    enableEmailNotify: false,
-    newsletterOptIn: false
-  },
-
-  editor: {
-    showToolbar: true,
-    toolbarItems: [
-      "bold",
-      "italic",
-      "underline",
-      "strike",
-      "heading",
-      "bulletList",
-      "orderedList",
-      "blockquote",
-      "codeBlock",
-      "image",
-      "table"
-    ],
-    autosave: true,
-    autosaveInterval: 10,
-    showLineNumbers: true,
-    wordWrap: true,
-
-    focusMode: false,
-    zenMode: false,
-    spellCheck: false,
-    markdownPreviewSplit: "vertical",
-    defaultDocType: "note",
-
-    enabledExtensions: ["bold", "italic", "heading", "taskList", "image", "codeBlock"],
-    imageUploadMode: "oss",
-    shortcutMap: {
-      bold: "Ctrl+B",
-      italic: "Ctrl+I",
-      underline: "Ctrl+U",
-      save: "Ctrl+S"
-    },
-    autosuggestTags: true,
-    enableAIAssistant: true,
-    aiModel: "deepseek-chat",
-
-    defaultExportFormat: "md",
-    allowPublicShare: false,
-    watermarkText: "西木笔记 · 保留所有权利"
-  },
-
   user: {
-    language: "zh-CN",
-    timezone: "Asia/Shanghai",
-    editorTheme: "solarized-dark",
-    customCss: "",
-    defaultFolder: "我的笔记",
-    recentDocsCount: 10,
-    favoriteTags: ["工作", "灵感", "学习"],
-    enableShortcuts: true
+    nickname: "西木",
+    avatar: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
+    email: "user@example.com",
+    devices: [
+        { id: 1, name: 'Chrome / Windows 10', time: '2023-10-27 10:30', current: true },
+        { id: 2, name: 'Safari / iPhone 13', time: '2023-10-26 15:20', current: false },
+    ]
+  },
+  appearance: {
+    themeMode: "auto", // auto, light, dark
+    accentColor: "#409EFF",
+    fontFamily: "default", // default, serif, mono
+    fontSize: 15,
+    lineHeight: "standard", // compact, standard, loose
+    contentWidth: "standard", // narrow, standard, wide
+    sidebarMode: "auto", // auto, fixed
+  },
+  editor: {
+    autoSave: true,
+    autoSaveInterval: 30,
+    defaultOpenMode: "edit", // edit, preview, split
+    enableMarkdown: true,
+    pasteMode: "style", // style, text
+    enterMode: "paragraph", // paragraph, break
+    codeTheme: "github",
+    performanceMode: false
+  },
+  data: {
+      exportFormat: "md",
+      autoBackup: true,
+      localCache: true,
+      offlineMode: false
+  },
+  advanced: {
+      aiSummary: true,
+      aiOutline: true,
+      experimental: false,
+      debugMode: false
+  },
+  // 保留旧数据结构兼容性
+  site: {
+      // 占位，防止旧代码报错
   }
 });
 
-// 打开设置对话框
+// 导航配置
+const tabs = [
+  { id: 'account', label: '账户设置', icon: User, desc: '管理您的个人信息、安全选项及登录设备。' },
+  { id: 'appearance', label: '外观视觉', icon: Monitor, desc: '定制您喜欢的应用界面风格与内容排版。' },
+  { id: 'editor', label: '编辑习惯', icon: Edit, desc: '调整编辑器的行为以适应您的写作流。' },
+  { id: 'data', label: '数据管理', icon: Files, desc: '管理您的数据同步、备份和存储方式。' },
+  { id: 'advanced', label: '高级选项', icon: Tools, desc: '开发者选项和其他高级设置。' },
+];
+
+// 颜色选项
+const accentColors = ['#409EFF', '#67C23A', '#F56C6C', '#E6A23C', '#909399', '#79bbff'];
+
+// 设置项 Schema 配置
+const schema = {
+  account: [
+    {
+      title: '个人资料',
+      items: [
+        { label: '头像', section: 'user', key: 'avatar', type: 'avatar', colSpan: 2 },
+        { label: '昵称', section: 'user', key: 'nickname', type: 'input', colSpan: 1 },
+        { label: '绑定邮箱', section: 'user', key: 'email', type: 'input', props: { readonly: true, disabled: true }, colSpan: 1 },
+        { label: '登录密码', type: 'button', buttonText: '修改密码', action: 'changePassword', colSpan: 1, props: { plain: true } }
+      ]
+    },
+    {
+      title: '设备管理',
+      items: [
+        { section: 'user', key: 'devices', type: 'device-list', colSpan: 2 }
+      ]
+    },
+    {
+      title: '危险区域',
+      items: [
+        { 
+          desc: '注销后您的所有数据将被永久删除，无法恢复，请谨慎操作。',
+          type: 'button', 
+          buttonText: '注销当前账号', 
+          action: 'deleteAccount', 
+          props: { type: 'danger', plain: true }, 
+          colSpan: 2 
+        }
+      ]
+    }
+  ],
+  appearance: [
+    {
+      items: [
+        { 
+          label: '主题模式', 
+          section: 'appearance', 
+          key: 'themeMode', 
+          type: 'radio', 
+          colSpan: 2,
+          options: [
+            { label: '跟随系统', value: 'auto' },
+            { label: '浅色', value: 'light' },
+            { label: '深色', value: 'dark' },
+          ]
+        },
+        { 
+          label: '主题色彩', 
+          section: 'appearance', 
+          key: 'accentColor', 
+          type: 'color-circles', 
+          colSpan: 2,
+          options: accentColors
+        }
+      ]
+    },
+    {
+      items: [
+        { 
+          label: '正文字体', 
+          section: 'appearance', 
+          key: 'fontFamily', 
+          type: 'select', 
+          colSpan: 1,
+          options: [
+            { label: '默认', value: 'default' },
+            { label: '衬线字体', value: 'serif' },
+            { label: '等宽字体', value: 'mono' }
+          ]
+        },
+        { 
+          label: '字号大小', 
+          section: 'appearance', 
+          key: 'fontSize', 
+          type: 'slider', 
+          min: 12, max: 24, step: 1,
+          colSpan: 1 
+        }
+      ]
+    },
+    {
+      items: [
+        {
+          label: '行高',
+          section: 'appearance', 
+          key: 'lineHeight',
+          type: 'segmented',
+          colSpan: 2,
+          options: [
+            { label: '紧凑', value: 'compact' },
+            { label: '标准', value: 'standard' },
+            { label: '宽松', value: 'loose' }
+          ]
+        }
+      ]
+    },
+    {
+      items: [
+        {
+          label: '内容宽度',
+          section: 'appearance', 
+          key: 'contentWidth',
+          type: 'segmented',
+          colSpan: 1,
+          options: [
+            { label: '窄', value: 'narrow' },
+            { label: '标准', value: 'standard' },
+            { label: '宽', value: 'wide' }
+          ]
+        },
+        {
+          label: '左侧栏显示方式',
+          section: 'appearance', 
+          key: 'sidebarMode',
+          type: 'radio',
+          colSpan: 1,
+          options: [
+            { label: '自动折叠', value: 'auto' },
+            { label: '固定展开', value: 'fixed' }
+          ]
+        }
+      ]
+    }
+  ],
+  editor: [
+    {
+      title: '常规',
+      items: [
+        { label: '自动保存', section: 'editor', key: 'autoSave', type: 'switch', colSpan: 1 },
+        { label: '保存间隔(秒)', section: 'editor', key: 'autoSaveInterval', type: 'slider', min: 5, max: 120, colSpan: 1, visibleWhen: s => s.editor.autoSave },
+        { label: '默认打开模式', section: 'editor', key: 'defaultOpenMode', type: 'select', colSpan: 1,
+          options: [
+            { label: '编辑', value: 'edit' },
+            { label: '预览', value: 'preview' },
+            { label: '分屏', value: 'split' }
+          ]
+        },
+        { label: 'Markdown 支持', section: 'editor', key: 'enableMarkdown', type: 'switch', colSpan: 1 },
+      ]
+    },
+    {
+      title: '输入体验',
+      items: [
+        { label: '粘贴行为', section: 'editor', key: 'pasteMode', type: 'radio', colSpan: 1,
+          options: [{ label: '保留样式', value: 'style' }, { label: '纯文本', value: 'text' }]
+        },
+        { label: '回车行为', section: 'editor', key: 'enterMode', type: 'radio', colSpan: 1,
+          options: [{ label: '新段落', value: 'paragraph' }, { label: '软换行', value: 'break' }]
+        },
+      ]
+    },
+    {
+      title: '高级',
+      items: [
+        { label: '代码块高亮', section: 'editor', key: 'codeTheme', type: 'select', colSpan: 1,
+          options: [
+             { label: 'GitHub', value: 'github' },
+             { label: 'Monokai', value: 'monokai' },
+             { label: 'Dracula', value: 'dracula' }
+          ]
+        },
+        { label: '大文档性能模式', section: 'editor', key: 'performanceMode', type: 'switch', colSpan: 1, desc: '适用于万字以上文档，会禁用部分动态效果' },
+      ]
+    }
+  ],
+  data: [
+      {
+          title: '导出与备份',
+          items: [
+              { label: '默认导出格式', section: 'data', key: 'exportFormat', type: 'select', colSpan: 1,
+                options: [
+                    { label: 'Markdown', value: 'md' },
+                    { label: 'PDF', value: 'pdf' },
+                    { label: 'HTML', value: 'html' }
+                ]
+              },
+              { label: '批量导出文件夹', type: 'button', buttonText: '导出...', action: 'batchExport', colSpan: 1 },
+              { label: '自动备份', section: 'data', key: 'autoBackup', type: 'switch', colSpan: 1 },
+          ]
+      },
+      {
+          title: '存储与网络',
+          items: [
+              { label: '本地缓存', section: 'data', key: 'localCache', type: 'switch', colSpan: 1 },
+              { label: '离线模式', section: 'data', key: 'offlineMode', type: 'switch', colSpan: 1 },
+              { label: '清空本地缓存', type: 'button', buttonText: '清空缓存', action: 'clearCache', props: { type: 'warning', plain: true }, colSpan: 2 }
+          ]
+      }
+  ],
+  advanced: [
+      {
+          title: '快捷键设置',
+          items: [
+              { label: '快捷键', type: 'button', buttonText: '查看快捷键列表', action: 'viewShortcuts', colSpan: 1 },
+              { label: '恢复默认', type: 'button', buttonText: '恢复默认快捷键', action: 'resetShortcuts', props: { plain: true }, colSpan: 1 },
+          ]
+      },
+      {
+          title: 'AI 辅助功能',
+          items: [
+              { label: 'AI 总结', section: 'advanced', key: 'aiSummary', type: 'switch', colSpan: 1 },
+              { label: 'AI 大纲生成', section: 'advanced', key: 'aiOutline', type: 'switch', colSpan: 1 },
+          ]
+      },
+      {
+          title: '系统',
+          items: [
+              { label: '实验性功能', section: 'advanced', key: 'experimental', type: 'switch', colSpan: 1 },
+              { label: '调试模式', section: 'advanced', key: 'debugMode', type: 'switch', colSpan: 1 },
+              { 
+                  desc: '重置所有设置将恢复到初始状态，此操作不可撤销。',
+                  type: 'button', 
+                  buttonText: '重置所有设置', 
+                  action: 'resetSettings', 
+                  props: { type: 'danger', plain: true }, 
+                  colSpan: 2 
+              }
+          ]
+      }
+  ]
+};
+
+const currentTabInfo = computed(() => {
+  return tabs.find(t => t.id === activeTab.value) || tabs[0];
+});
+
+const currentGroups = computed(() => {
+  return schema[activeTab.value] || [];
+});
+
+// 自动保存逻辑
+const save = () => {
+  try {
+    localStorage.setItem('xmnote-settings', JSON.stringify(settings));
+    applySettings();
+    console.log('Settings saved automatically');
+  } catch (error) {
+    console.error('Save failed:', error);
+  }
+};
+
+const debouncedSave = useDebounceFn(save, 800);
+
+// 监听设置变化
+watch(settings, () => {
+  debouncedSave();
+}, { deep: true });
+
+// 应用设置
+const applySettings = () => {
+  const root = document.documentElement;
+  const a = settings.appearance;
+  
+  // 字体映射
+  const fontMap = {
+    default: "Inter, Noto Sans SC, sans-serif",
+    serif: "'Noto Serif SC', serif",
+    mono: "'JetBrains Mono', monospace"
+  };
+
+  root.style.setProperty('--font-family', fontMap[a.fontFamily] || fontMap.default);
+  root.style.setProperty('--font-size', `${a.fontSize}px`);
+  root.style.setProperty('--accent-color', a.accentColor);
+  
+  // 主题模式
+  root.classList.remove('light-mode', 'dark-mode');
+  if (a.themeMode === 'auto') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    root.classList.add(prefersDark ? 'dark-mode' : 'light-mode');
+  } else {
+    root.classList.add(a.themeMode === 'light' ? 'light-mode' : 'dark-mode');
+  }
+  
+  // 行高映射
+  const lhMap = { compact: '1.4', standard: '1.6', loose: '1.8' };
+  root.style.setProperty('--line-height', lhMap[a.lineHeight] || '1.6');
+
+  // 内容宽度映射
+  const widthMap = { narrow: '680px', standard: '900px', wide: '1200px' };
+  root.style.setProperty('--content-width', widthMap[a.contentWidth] || '900px');
+};
+
+// 加载设置
+const loadSavedSettings = () => {
+  try {
+    const saved = localStorage.getItem('xmnote-settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Merge logic...
+      if(parsed.appearance) Object.assign(settings.appearance, parsed.appearance);
+      if(parsed.editor) Object.assign(settings.editor, parsed.editor);
+      if(parsed.user) Object.assign(settings.user, parsed.user);
+      if(parsed.data) Object.assign(settings.data, parsed.data);
+      if(parsed.advanced) Object.assign(settings.advanced, parsed.advanced);
+    }
+  } catch (e) {
+    console.error('Load settings failed', e);
+  }
+};
+
+const handleAction = (item) => {
+  if (item.action === 'deleteAccount') {
+    ElMessageBox.confirm('注销后您的所有数据将被永久删除，无法恢复。确定要继续吗？', '危险操作确认', { 
+        type: 'warning',
+        confirmButtonText: '确认注销',
+        cancelButtonText: '取消',
+        confirmButtonClass: 'el-button--danger'
+    })
+      .then(() => {
+        ElMessage.success('账号已注销');
+      })
+      .catch(() => {});
+  } else if (item.action === 'changePassword') {
+      ElMessageBox.prompt('请输入新密码', '修改密码', {
+        inputType: 'password',
+        inputPattern: /.{6,}/,
+        inputErrorMessage: '密码长度至少为6位'
+      }).then(({ value }) => {
+        ElMessage.success('密码修改成功');
+      }).catch(() => {});
+  } else if (item.action === 'resetSettings') {
+      ElMessageBox.confirm('确定要重置所有设置吗？', '确认', { type: 'warning' })
+      .then(() => {
+        localStorage.removeItem('xmnote-settings');
+        location.reload();
+      })
+      .catch(() => {});
+  } else if (item.action === 'clearCache') {
+      ElMessageBox.confirm('确定要清空本地缓存吗？可能会导致图片重新加载。', '清空缓存', { type: 'warning' })
+      .then(() => {
+          ElMessage.success('本地缓存已清空');
+      })
+      .catch(() => {});
+  } else if (item.action === 'batchExport') {
+      ElMessage.info('批量导出功能开发中...');
+  } else if (item.action === 'viewShortcuts') {
+      ElMessage.info('快捷键列表功能开发中...');
+  } else if (item.action === 'resetShortcuts') {
+      ElMessage.success('快捷键已恢复默认');
+  }
+};
+
+const handleForceLogout = (device) => {
+    ElMessageBox.confirm(`确定要强制下线设备 "${device.name}" 吗？`, '下线确认', {
+        confirmButtonText: '下线',
+        cancelButtonText: '取消',
+        type: 'warning'
+    }).then(() => {
+        const index = settings.user.devices.findIndex(d => d.id === device.id);
+        if (index > -1) {
+            settings.user.devices.splice(index, 1);
+            ElMessage.success('设备已强制下线');
+        }
+    }).catch(() => {});
+};
+
 const open = () => {
   loadSavedSettings();
   dialogVisible.value = true;
 };
 
-// 关闭设置对话框
 const handleClose = () => {
   dialogVisible.value = false;
 };
 
-// 取消按钮
-const cancel = () => {
-  dialogVisible.value = false;
-};
-
-// 保存设置
-const save = () => {
-  try {
-    // 保存设置到本地存储
-    localStorage.setItem('xmnote-settings', JSON.stringify(settings));
-    
-    // 应用设置
-    applySettings();
-    
-    // 显示成功消息
-    ElMessage({
-      message: '设置已保存',
-      type: 'success'
-    });
-    
-    dialogVisible.value = false;
-  } catch (error) {
-    console.error('保存设置失败:', error);
-    ElMessage({
-      message: '保存设置失败',
-      type: 'error'
-    });
-  }
-};
-
-// 应用设置
-const applySettings = () => {
-  // 应用主题设置
-  document.documentElement.style.setProperty('--font-family', settings.site.fontFamily);
-  document.documentElement.style.setProperty('--font-size', `${settings.site.fontSize}px`);
-  document.documentElement.style.setProperty('--accent-color', settings.site.accentColor);
-  
-  // 应用主题模式
-  if (settings.site.themeMode === 'dark') {
-    document.documentElement.classList.add('dark-mode');
-    document.documentElement.classList.remove('light-mode');
-  } else if (settings.site.themeMode === 'light') {
-    document.documentElement.classList.add('light-mode');
-    document.documentElement.classList.remove('dark-mode');
-  } else {
-    // 自动模式，根据系统设置
-    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (prefersDarkMode) {
-      document.documentElement.classList.add('dark-mode');
-      document.documentElement.classList.remove('light-mode');
-    } else {
-      document.documentElement.classList.add('light-mode');
-      document.documentElement.classList.remove('dark-mode');
-    }
-  }
-  
-  // 应用布局模式
-  document.body.className = document.body.className
-    .replace(/layout-\w+/g, '')
-    .trim() + ` layout-${settings.site.layoutMode}`;
-  
-  // 应用自定义CSS
-  let customStyleElement = document.getElementById('xmnote-custom-css');
-  if (!customStyleElement) {
-    customStyleElement = document.createElement('style');
-    customStyleElement.id = 'xmnote-custom-css';
-    document.head.appendChild(customStyleElement);
-  }
-  customStyleElement.textContent = settings.user.customCss;
-  
-  console.log('设置已应用');
-};
-
-// 加载保存的设置
-const loadSavedSettings = () => {
-  try {
-    const savedSettings = localStorage.getItem('xmnote-settings');
-    if (savedSettings) {
-      const parsedSettings = JSON.parse(savedSettings);
-      // 合并保存的设置到当前设置
-      Object.keys(parsedSettings).forEach(key => {
-        if (settings[key]) {
-          settings[key] = { ...settings[key], ...parsedSettings[key] };
-        }
-      });
-      console.log('已加载保存的设置');
-    }
-  } catch (error) {
-    console.error('加载设置失败:', error);
-  }
-};
-
-// 组件挂载时加载设置
 onMounted(() => {
   loadSavedSettings();
-  // 应用已保存的设置
   applySettings();
 });
 
-const onKeydown = (e) => {
-  if (e.key === 'Escape' && dialogVisible.value) {
-    handleClose();
-  }
-};
-
-onMounted(() => {
-  window.addEventListener('keydown', onKeydown);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', onKeydown);
-});
-
-const scrollTo = (key) => {
-  const map = { site: siteRef, editor: editorRef, user: userRef };
-  const target = map[key]?.value;
-  const container = contentRef.value;
-  if (!target || !container) return;
-  container.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
-  activeTab.value = key;
-};
-
-const onContentScroll = () => {
-  const container = contentRef.value;
-  if (!container) return;
-  const scrollTop = container.scrollTop;
-  const positions = [
-    { key: 'site', top: siteRef.value?.offsetTop ?? 0 },
-    { key: 'editor', top: editorRef.value?.offsetTop ?? 0 },
-    { key: 'user', top: userRef.value?.offsetTop ?? 0 },
-  ];
-  let current = 'site';
-  for (const p of positions) {
-    if (p.top - 10 <= scrollTop) current = p.key;
-  }
-  activeTab.value = current;
-};
-
-// 暴露方法给父组件
-defineExpose({
-  open
-});
+defineExpose({ open });
 </script>
 
 <style lang="scss" scoped>
+/* Color Variables */
+$primary-color: var(--accent-color, #409EFF);
+$bg-color-active: #ECF5FF; 
+$text-color-primary: #303133;
+$text-color-secondary: #606266;
+$text-color-placeholder: #909399;
+$border-color: #EBEEF5;
+$bg-white: #FFFFFF;
+$bg-gray: #F5F7FA;
+
 .settings-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  animation: fadeIn 0.2s ease;
 }
 
-.settings-dialog {
-  width: 80%;
-  max-height: 80vh;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+.settings-container {
+  width: 900px;
+  height: 680px;
+  max-width: 95vw;
+  max-height: 90vh;
+  background: $bg-white;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  display: flex;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Sidebar Styling */
+.settings-sidebar {
+  width: 240px;
+  background: #FAFAFA;
+  border-right: 1px solid $border-color;
   display: flex;
   flex-direction: column;
-  color: inherit;
+  justify-content: space-between;
+  padding: 24px 12px;
+  flex-shrink: 0;
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    margin-bottom: 24px;
+    
+    .header-icon {
+      color: $primary-color;
+      font-weight: bold;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111;
+    }
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: $text-color-secondary;
+    margin-bottom: 4px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(0,0,0,0.03);
+    }
+
+    &.active {
+      background: $bg-color-active;
+      color: $primary-color;
+      font-weight: 500;
+    }
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    color: $text-color-placeholder;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover {
+      color: $text-color-primary;
+    }
+  }
 }
 
-.settings-header {
+/* Content Area Styling */
+.settings-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: $bg-white;
+  min-width: 0;
+  
+  .content-header {
+    padding: 32px 40px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-shrink: 0;
+
+    .header-info {
+      .content-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111;
+        margin: 0 0 8px 0;
+      }
+      .content-desc {
+        font-size: 14px;
+        color: $text-color-placeholder;
+        margin: 0;
+      }
+    }
+
+    .close-btn {
+      border: none;
+      background: transparent;
+      color: #999;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px;
+      border-radius: 4px;
+      transition: background 0.2s;
+      
+      &:hover {
+        background: #f0f0f0;
+      }
+    }
+  }
+
+  .content-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 40px;
+    
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #E0E0E0;
+      border-radius: 3px;
+    }
+  }
+
+  .content-footer {
+    padding: 16px 40px;
+    border-top: 1px solid $border-color;
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    
+    .auto-save-text {
+      font-size: 12px;
+      color: $text-color-placeholder;
+    }
+  }
+}
+
+/* Form Groups & Items */
+.setting-group {
+  margin-bottom: 32px;
+
+  .group-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-color-primary;
+    margin-bottom: 16px;
+  }
+}
+
+.group-items-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px; /* Space between columns/rows */
+}
+
+.setting-item-wrapper {
+  &.col-span-1 { grid-column: span 1; }
+  &.col-span-2 { grid-column: span 2; }
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .item-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .item-label {
+      font-size: 14px;
+      font-weight: 600; 
+      color: #444;
+    }
+    
+    .item-value-display {
+      font-size: 12px;
+      color: $text-color-placeholder;
+    }
+  }
+
+  .item-desc-text {
+    font-size: 13px;
+    color: $text-color-secondary;
+    line-height: 1.5;
+    margin-top: -8px;
+    margin-bottom: 4px;
+  }
+
+  .item-control {
+    width: 100%;
+  }
+}
+
+/* Avatar Uploader */
+.avatar-uploader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid #eee;
+  gap: 20px;
+  
+  .avatar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    
+    .avatar-tip {
+      font-size: 12px;
+      color: $text-color-placeholder;
+    }
+  }
 }
 
-.settings-title {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.settings-close {
-  border: none;
-  background: transparent;
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.settings-body {
-  overflow: hidden;
-  flex: 1 1 auto;
-  padding: 16px;
+/* Device List */
+.device-list {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+  
+  .device-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: $bg-gray;
+    border-radius: 8px;
+    gap: 16px;
+    
+    .device-icon {
+      color: $text-color-secondary;
+    }
+    
+    .device-info {
+      flex: 1;
+      
+      .device-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: $text-color-primary;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .device-time {
+        font-size: 12px;
+        color: $text-color-placeholder;
+        margin-top: 4px;
+      }
+    }
+  }
+}
+
+/* Custom Controls Styling */
+
+/* Segmented Control */
+.segmented-control {
+  display: flex;
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+  
+  .segment-item {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    color: $text-color-secondary;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    user-select: none;
+    
+    &:hover {
+      background: #fafafa;
+    }
+    
+    &.active {
+      background: $bg-color-active;
+      color: $primary-color;
+      font-weight: 600;
+    }
+  }
+}
+
+/* Color Circles */
+.color-control {
+  display: flex;
+  align-items: center;
   gap: 16px;
+  justify-content: space-between;
 }
 
-.settings-sidebar {
-  width: 200px;
-  flex-shrink: 0;
-}
-
-.tab-item {
-  padding: 10px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.tab-item:hover {
-  background-color: #f5f7fa;
-}
-
-.tab-item.is-active {
-  color: var(--accent-color);
-  font-weight: 600;
-  background-color: #f0f6ff;
-}
-
-.settings-content {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding: 0 16px 16px 16px;
-}
-
-.settings-footer {
-  padding: 12px 16px;
-  border-top: 1px solid #eee;
+.color-circles {
   display: flex;
-  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  
+  .color-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: transform 0.2s;
+    border: 2px solid transparent; // Reserve space for border
+    
+    &:hover {
+      transform: scale(1.1);
+    }
+    
+    &.active {
+      box-shadow: 0 0 0 2px white, 0 0 0 4px $primary-color; // Ring effect
+    }
+    
+    .check-icon {
+      font-size: 14px;
+      font-weight: bold;
+    }
+  }
+}
+
+.custom-color-picker {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  
+  .custom-color-label {
+    font-size: 12px;
+    color: $text-color-secondary;
+  }
 }
 
-.settings-content :deep(.el-divider) {
-  margin: 16px 0;
-  --el-border-color: #E6E8EB;
+/* Overriding Element Plus Defaults to match cleaner look */
+:deep(.el-radio-group) {
+  display: flex;
+  gap: 24px;
 }
 
-.settings-content :deep(.el-divider__text) {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent-color);
-  padding: 0 8px;
-  background: #fff;
+:deep(.el-radio) {
+  margin-right: 0;
+  height: auto;
+  
+  .el-radio__label {
+    padding-left: 8px;
+    color: $text-color-primary;
+  }
+  
+  &.is-checked .el-radio__label {
+    color: $text-color-primary; // Keep text color dark even when selected
+  }
+}
+
+:deep(.el-input__wrapper), :deep(.el-select__wrapper) {
+  box-shadow: 0 0 0 1px #DCDFE6 inset;
+  padding: 8px 12px;
+  border-radius: 4px;
+  
+  &.is-focus {
+    box-shadow: 0 0 0 1px $primary-color inset !important;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 </style>
