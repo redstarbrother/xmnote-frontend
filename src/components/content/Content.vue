@@ -18,7 +18,7 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from "vue";
 import { XmEditor, Extensions, Presets } from "@putanut/xm-editor";
-import "@putanut/xm-editor/xm-editor.css"
+import "@putanut/xm-editor/xm-editor-notion.css"
 import { useDocumentStore } from "@/stores/documentStore";
 import { useDomainStore } from "@/stores/domainStore";
 import {
@@ -78,8 +78,12 @@ onMounted(() => {
                     },
                 }),
             ],
-            onUpdate: handleEditorChange,
-            backgroundColorOnFocus: "#f8f9fa",
+            events: {
+                onUpdate: handleEditorChange,
+            },
+            style: {
+                customClass: "editor"
+            }
         }),
     });
     resize();
@@ -198,7 +202,7 @@ watch(
 );
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss" >
 .content-container {
     width: 70%;
 
@@ -253,6 +257,10 @@ watch(
 
     .content-footer {
         flex-shrink: 0;
+    }
+
+    .editor {
+        border: 0;
     }
 }
 </style>
