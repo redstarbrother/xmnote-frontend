@@ -18,7 +18,7 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from "vue";
 import { XmEditor, Extensions, Presets } from "@putanut/xm-editor";
-import "@putanut/xm-editor/xm-editor.css"
+import "@putanut/xm-editor/xm-editor-notion.css"
 import { useDocumentStore } from "@/stores/documentStore";
 import { useDomainStore } from "@/stores/domainStore";
 import {
@@ -206,7 +206,7 @@ watch(
 );
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .content-container {
     width: 70%;
 
@@ -258,13 +258,13 @@ watch(
         flex: 1;
         overflow: visible; // 修改为visible，防止内部出现滚动条
     }
-    
+
+    .xm-editor-custom {
+        border: 0;
+    }
+
     .content-footer {
         flex-shrink: 0;
     }
-}
-
-:deep(.xm-editor-custom) {
-    border: 0;
 }
 </style>

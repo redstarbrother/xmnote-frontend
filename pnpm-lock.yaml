@@ -2162,6 +2162,7 @@ snapshots:
       - '@tiptap/extension-code-block'
       - '@tiptap/pm'
       - '@vue/composition-api'
+      - '@vue/composition-api'
       - emojibase
       - highlight.js
       - vue
