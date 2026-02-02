@@ -62,7 +62,7 @@ onMounted(async () => {
   .el-container {
     height: 100%;
     width: 100%;
-    background-color: #f8f9fa;
+    background-color: #fff;
 
     // display: flex;
     // justify-content: center;
@@ -77,7 +77,7 @@ onMounted(async () => {
           border-bottom: 1px solid rgb(233, 236, 239);
       }
       .el-main {
-        background-color: #f8f9fa;
+        background-color: #fff;
       }
       .el-footer {
         display: flex;

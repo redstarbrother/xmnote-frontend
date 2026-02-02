@@ -78,8 +78,16 @@ onMounted(() => {
                     },
                 }),
             ],
-            onUpdate: handleEditorChange,
-            backgroundColorOnFocus: "#f8f9fa",
+            editorOption: {
+                placeholder: "输入 '/' 唤起命令菜单...",
+                autofocus: true,
+            },
+            events: {
+                onUpdate: handleEditorChange,
+            },
+            style: {
+                customClass: 'xm-editor-custom',
+            },
         }),
     });
     resize();
@@ -208,7 +216,7 @@ watch(
         flex-shrink: 0;
         display: flex;
         align-items: flex-start;
-        background-color: #f8f9fa;
+        background-color: #fff;
         padding: 10px 20px;
 
         .logo {
@@ -236,7 +244,7 @@ watch(
             // height: 100%;
             border: none;
             outline: none;
-            background-color: #f8f9fa;
+            background-color: #fff;
             overflow: hidden;
 
             &::placeholder {
@@ -250,9 +258,13 @@ watch(
         flex: 1;
         overflow: visible; // 修改为visible，防止内部出现滚动条
     }
-
+    
     .content-footer {
         flex-shrink: 0;
     }
+}
+
+:deep(.xm-editor-custom) {
+    border: 0;
 }
 </style>
