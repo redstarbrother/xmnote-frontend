@@ -2,7 +2,7 @@
   <div class="sidebar-container" :style="{ width: containerWidth }">
     <div class="sidebar-wrapper" ref="wrapperRef">
       <div class="logo-area" @click="handleLogoClick">
-        <img src="/logo.svg" alt="logo" class="logo" />
+        <img src="/logo.png" alt="logo" class="logo" />
         <div class="highlight">西木笔记</div>
       </div>
       <div class="quick-area">

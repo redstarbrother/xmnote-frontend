@@ -1,7 +1,7 @@
 <template>
   <section class="hero">
     <div class="brand">
-      <img src="/logo.svg" alt="logo" class="logo" />
+      <img src="/logo.png" alt="logo" class="logo" />
       <div class="highlight">西木笔记</div>
     </div>
     <p class="subtitle">高效记录灵感，轻松组织知识</p>
@@ -47,10 +47,9 @@ import { Plus, Collection } from '@element-plus/icons-vue';
 
   .highlight {
     font-size: 40px;
-    background: linear-gradient(90deg, #e54746, #80bf4d, #f8ce3e,#2ea7d9);
     -webkit-background-clip: text;
     background-clip: text;
-    color: transparent;
+    color: #5f5f5b;
     font-weight: 700;
   }
 
