@@ -99,14 +99,6 @@ const logout = async () => {
 </script>
 
 <style lang="scss" scoped>
-// 使用CSS变量定义主题颜色和间距
-:root {
-  --text-primary: #333;
-  --text-secondary: #999;
-  --spacing-sm: 5px;
-  --spacing-md: 10px;
-}
-
 // 设置弹出框样式
 :deep(.settings-dialog) {
   .el-dialog__body {
@@ -118,36 +110,39 @@ const logout = async () => {
 .user-container {
   display: flex;
   flex-direction: column;
-  width: 95%;
+  width: 100%;
   height: 100%;
-  padding: 12px;
+  padding: 8px 12px;
 
   .user-info-area {
     display: flex;
     align-items: center;
-    padding: 8px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
     cursor: pointer;
+    user-select: none;
 
     &:hover {
-      background-color: rgba(112, 108, 108, 0.10);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(166, 166, 166, 0.1);
+      background-color: #f8f9fa;
 
       .user-actions {
         opacity: 1;
       }
     }
 
+    &:active {
+      background-color: #f0f0ef;
+    }
+
     .user-actions {
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.2s ease;
     }
 
     .user-info-avatar {
-      // display: inline-block;
       height: 40px;
+      flex-shrink: 0;
     }
 
     .user-info-message {
@@ -156,20 +151,29 @@ const logout = async () => {
       align-items: flex-start;
       gap: 4px;
       margin-left: 10px;
+      min-width: 0;
+      flex: 1;
 
       .user-name {
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 600;
-        margin-left: var(--spacing-md);
-        color: var(--text-primary);
+        color: #3c3c39;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
       }
 
       .server-addr {
-        background-color: rgb(219 234 254);
+        background-color: #f0f0ef;
         font-size: 10px;
-        border-radius: 0.25rem;
-        padding: 0.2rem 0.35rem;
-        color: #007bff;
+        border-radius: 4px;
+        padding: 1px 6px;
+        color: #8e8e93;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
       }
     }
 
@@ -177,69 +181,19 @@ const logout = async () => {
       margin-left: auto;
       display: flex;
       align-items: center;
+      flex-shrink: 0;
 
       .action-btn {
-        padding: 6px;
+        padding: 4px;
         height: auto;
         margin-left: 0;
-        
+        color: #868684;
+
         &:hover {
-          background-color: rgba(0, 0, 0, 0.05);
+          background-color: #e6e6e4;
           border-radius: 4px;
+          color: #5f5f5b;
         }
-      }
-    }
-  }
-
-  .doc-info-area {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-top: var(--spacing-sm);
-
-    .count-info {
-      width: 100%;
-      font-size: 14px;
-      margin-top: 6px;
-      color: var(--text-primary);
-    }
-  }
-
-  .options-area {
-    display: flex;
-    align-items: center;
-    margin-top: var(--spacing-sm);
-
-    .option-btn {
-      font-size: 14px;
-      margin-right: var(--spacing-md);
-
-      &:last-child {
-        margin-right: 0;
-      }
-    }
-  }
-}
-
-// 添加响应式设计
-@media (max-width: 768px) {
-  .user-container {
-    .user-info-area {
-      flex-direction: column;
-
-      .user-info-message {
-        margin-top: var(--spacing-sm);
-        text-align: center;
-
-        .user-name,
-        .server-addr {
-          margin-left: 0;
-        }
-      }
-
-      .user-actions {
-        margin-left: 0;
-        margin-top: var(--spacing-sm);
       }
     }
   }
