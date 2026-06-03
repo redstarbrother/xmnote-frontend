@@ -37,7 +37,7 @@ import { getUserIdFromToken } from '@/utils/jwtUtil';
 import { useDocumentStore } from "@/stores/documentStore";
 
 const documentStore = useDocumentStore();
-const showContent = computed(() => documentStore.getDocumentId() !== "");
+const showContent = computed(() => !!documentStore.getDocumentId());
 
 const domainStore = useDomainStore();
 

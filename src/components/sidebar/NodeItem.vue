@@ -311,7 +311,7 @@ const updateNode = async () => {
 
 <style scoped lang="scss">
 .node-item {
-  margin: 5px 0;
+  margin: 5px 0 0 0;
   cursor: pointer;
 
   .selected {
@@ -335,6 +335,9 @@ const updateNode = async () => {
       display: flex;
       align-items: center;
       height: 24px;
+      flex: 1;
+      min-width: 0;
+      margin-right: 8px;
 
       .item-info-logo {
         display: flex;
@@ -357,7 +360,8 @@ const updateNode = async () => {
 
       .truncate {
         color: #5f5f5b;
-        // max-width: 160px; // 移除固定宽度限制，使其自适应
+        flex: 1;
+        min-width: 0;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -366,10 +370,10 @@ const updateNode = async () => {
       .rename-input {
         font-size: 16px;
         line-height: 1;
-        margin-right: 5px;
         border: 1px solid #e4e2e2;
         border-radius: 4px;
         width: 100%;
+        box-sizing: border-box;
         color: #5f5f5b;
       }
     }

@@ -45,7 +45,7 @@ export const useDocumentStore = defineStore("document", () => {
   }
 
   function reset() {
-    documentId.value = null;
+    documentId.value = "";
     content.value = {};
     saveStatus.value = "saved";
   }

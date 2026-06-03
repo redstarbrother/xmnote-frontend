@@ -68,6 +68,10 @@ const handleLogoClick = () => {
 
 const updateWidth = () => {
   if (wrapperRef.value) {
+    // 如果当前存在重命名输入框，不更新侧边栏宽度，锁定当前宽度防止无限放大或抖动
+    if (wrapperRef.value.querySelector(".rename-input")) {
+      return;
+    }
     const contentWidth = wrapperRef.value.scrollWidth;
     const maxWidth = window.innerWidth * 0.3; // 30vw
     const minWidth = 240;
@@ -287,8 +291,7 @@ const addFolderNode = () => {
 
   .user-area {
     padding-top: 5px;
-    border-top: 1px solid #ddd;
-    // background-color: #fcfcfd;
+    border-top: 1px solid rgba(228, 228, 231, 0.8);
     z-index: 1;
     // 用户区域样式
   }
