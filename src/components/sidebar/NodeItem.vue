@@ -323,7 +323,7 @@ const updateNode = async () => {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    // box-sizing: border-box;
+    box-sizing: border-box;
     // height: 30px;
     padding: 8px 12px;
     // 避免用户选中文字
