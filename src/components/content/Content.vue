@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { XmEditor, Extensions, Presets } from "@putanut/xm-editor";
 import "@putanut/xm-editor/xm-editor-notion.css"
 import { useDocumentStore } from "@/stores/documentStore";
@@ -53,6 +53,7 @@ const resize = async () => {
 }
 
 let editor = null;
+let autoSaveTimer = null;
 
 onMounted(() => {
     // 第一次打开文档时初始化editor
@@ -91,9 +92,23 @@ onMounted(() => {
         }),
     });
     resize();
+
+    // 合并后的定时器设置：5秒自动保存
+    autoSaveTimer = setInterval(() => {
+        const status = documentStore.getSaveStatus();
+        if (status === "unsaved") {
+            // 保存文档
+            saveDocument();
+        }
+    }, 5000);
 })
 
-
+onUnmounted(() => {
+    if (autoSaveTimer) {
+        clearInterval(autoSaveTimer);
+        autoSaveTimer = null;
+    }
+});
 
 const logo = ref("");
 const title = ref("");
@@ -106,37 +121,39 @@ const handleEnterTitle = () => {
     editor.focus();
 };
 
-onMounted(() => {
-    // TODO 设置30秒自动保存
-    setInterval(() => {
-        const status = documentStore.getSaveStatus();
-        if (status === "unsaved") {
-            // 保存文档
-            saveDocument();
-        }
-    }, 5000);
-});
+const isSaving = ref(false);
 
 // 保存文档
 const saveDocument = async () => {
-    if (!documentId.value) return;
+    if (!documentId.value || isSaving.value) return;
 
+    isSaving.value = true;
     // 更新保存状态为保存中
     documentStore.setSaveStatus("saving");
 
-    let content = editor.getJSON();
-    const response = await updateDocument({
-        id: documentId.value,
-        title: title.value,
-        logo: logo.value,
-        content: JSON.stringify(content),
-    });
-    if (response.code !== 200) {
+    try {
+        let content = editor.getJSON();
+        const response = await updateDocument({
+            id: documentId.value,
+            title: title.value,
+            logo: logo.value,
+            content: JSON.stringify(content),
+        });
+        if (response.code !== 200) {
+            ElMessage.error("内容保存失败");
+            // 保存失败维持未保存状态
+            documentStore.setSaveStatus("unsaved");
+        } else {
+            // 只有当在此期间用户没有做新的修改时，才置为已保存状态
+            if (documentStore.getSaveStatus() === "saving") {
+                documentStore.setSaveStatus("saved");
+            }
+        }
+    } catch (err) {
         ElMessage.error("内容保存失败");
-        // 保存失败维持未保存状态
         documentStore.setSaveStatus("unsaved");
-    } else {
-        documentStore.setSaveStatus("saved");
+    } finally {
+        isSaving.value = false;
     }
 };
 
@@ -170,12 +187,29 @@ watch(
 // 监听当前文档 ID 变化，自动加载内容
 watch(
     documentId,
-    async (id) => {
-        if (!id) return;
+    async (newId, oldId) => {
+        // 1. 如果切换前，旧文档状态为未保存，先同步/异步保存旧文档
+        if (oldId && editor && documentStore.getSaveStatus() === "unsaved") {
+            try {
+                const oldContent = editor.getJSON();
+                const oldTitle = title.value;
+                const oldLogo = logo.value;
+                await updateDocument({
+                    id: oldId,
+                    title: oldTitle,
+                    logo: oldLogo,
+                    content: JSON.stringify(oldContent),
+                });
+            } catch (err) {
+                console.error("Failed to auto-save previous document on switch:", err);
+            }
+        }
+
+        if (!newId) return;
         initializing.value = true;
         // 从接口获取文档数据
         const response = await getDocument({
-            documentId: id,
+            documentId: newId,
         });
 
         if (response.code !== 200) {
@@ -193,7 +227,9 @@ watch(
             } catch (e) {
                 parsed = {};
             }
-            editor.setContent(parsed);
+            if (editor) {
+                editor.setContent(parsed);
+            }
             // 切换文档后默认视为已保存
             documentStore.setSaveStatus("saved");
         }
