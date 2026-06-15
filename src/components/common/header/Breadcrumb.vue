@@ -20,7 +20,7 @@ const documentStore = useDocumentStore()
 const domainStore = useDomainStore()
 
 const breadcrumbPath = computed(() => {
-    const currentId = documentStore.getDocumentId()
+    const currentId = documentStore.documentId
     if (!currentId) return []
     return domainStore.getPathToNode(currentId)
 })

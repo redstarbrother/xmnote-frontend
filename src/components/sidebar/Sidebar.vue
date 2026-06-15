@@ -63,7 +63,6 @@ let resizeObserver = null;
 const handleLogoClick = () => {
   // 切换侧边栏展开状态
   documentStore.reset();
-  console.log("documentStore:", documentStore);
 };
 
 const updateWidth = () => {
@@ -147,7 +146,6 @@ const addFolder = async (domainId) => {
 };
 
 const addFolderNode = () => {
-  console.log("新建目录");
 
 };
 

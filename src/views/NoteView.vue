@@ -33,13 +33,15 @@ import Footer from '@/components/layout/Footer.vue';
 import ContentWelcome from "@/components/welcome/ContentWelcome.vue";
 import { useDomainStore } from '@/stores/domainStore';
 import { getDomainTree } from '@/api/folder';
-import { getUserIdFromToken } from '@/utils/jwtUtil';
+import { getUserIdFromToken, getUserNameFromToken, getUserRoleFromToken } from '@/utils/jwtUtil';
 import { useDocumentStore } from "@/stores/documentStore";
+import { useUserStore } from "@/stores/userStore";
 
 const documentStore = useDocumentStore();
-const showContent = computed(() => !!documentStore.getDocumentId());
+const showContent = computed(() => !!documentStore.documentId);
 
 const domainStore = useDomainStore();
+const userStore = useUserStore();
 
 onMounted(async () => {
   const userId = getUserIdFromToken();
@@ -47,7 +49,15 @@ onMounted(async () => {
     console.error("User ID not found in token");
     return;
   }
-  const response2 = await getDomainTree({ userId });
+  
+  // Initialize userStore state from JWT token on load/refresh
+  userStore.setUserInfo({
+    id: userId,
+    username: getUserNameFromToken() || "已登录用户",
+    role: getUserRoleFromToken() || ""
+  });
+
+  const response2 = await getDomainTree();
   domainStore.init(response2.data);
 });
 </script>

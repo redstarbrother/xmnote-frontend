@@ -19,12 +19,13 @@ import { ref } from "vue";
 import LoginCard from "@/components/common/login/LoginCard.vue";
 import RegisterCard from "@/components/common/login/RegisterCard.vue";
 import { login } from "@/api/auth";
+import { setBaseUrl } from "@/api/request";
 import router from "@/router";
+import { ElMessage } from "element-plus";
 
 const isRegister = ref(false);
 
 const handleLogin = (loginForm) => {
-  console.log(JSON.stringify(loginForm));
   if (loginForm.isPrivate) {
     // 检查私有服务器是否存在
     if (!checkPrivateServer(loginForm.serverAddr)) {
@@ -32,7 +33,11 @@ const handleLogin = (loginForm) => {
       ElMessage.error("私有服务器连接失败！");
       return;
     }
-    // TODO 修改request对象，重置baseURL
+    // 修改request对象，重置baseURL
+    setBaseUrl(loginForm.serverAddr);
+  } else {
+    // 重置为默认的 baseURL
+    setBaseUrl(import.meta.env.VITE_API_BASE_URL);
   }
   // 构建登录请求对象
   var loginReq = {

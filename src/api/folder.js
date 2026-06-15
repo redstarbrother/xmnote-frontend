@@ -1,24 +1,10 @@
 import request from './request';
 
-// 获取文档列表
-export const getDirInfo = (params) => {
-    return request({
-        url: '/folder/getDirInfo',
-        method: 'get',
-        params: {
-            ...params
-        }
-    });
-};
-
 // 获取文档树
-export const getDomainTree = (params) => {
+export const getDomainTree = () => {
     return request({
         url: '/folder/getDomainTree',
-        method: 'get',
-        params: {
-            ...params
-        }
+        method: 'get'
     });
 };
 

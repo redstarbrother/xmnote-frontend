@@ -31,17 +31,15 @@ import { ElMessage } from "element-plus";
 import EmojiPicker from "@/components/common/EmojiPicker.vue";
 
 const documentStore = useDocumentStore();
-const documentId = computed(() => documentStore.getDocumentId());
+const documentId = computed(() => documentStore.documentId);
 const domainStore = useDomainStore();
 const titleInputRef = ref(null);
 // 内容修改回调方法
 const handleEditorChange = () => {
     if (initializing.value) return;
-    documentStore.setContent(editor.getJSON());
-    documentStore.setSaveStatus("unsaved");
+    documentStore.content = editor.getJSON();
+    documentStore.saveStatus = "unsaved";
 };
-
-console.log("Presets:", Presets);
 
 // 调整标题输入框高度
 const resize = async () => {
@@ -95,7 +93,7 @@ onMounted(() => {
 
     // 合并后的定时器设置：5秒自动保存
     autoSaveTimer = setInterval(() => {
-        const status = documentStore.getSaveStatus();
+        const status = documentStore.saveStatus;
         if (status === "unsaved") {
             // 保存文档
             saveDocument();
@@ -117,7 +115,6 @@ const title = ref("");
 const initializing = ref(false);
 
 const handleEnterTitle = () => {
-    console.log("回车键被按下！");
     editor.focus();
 };
 
@@ -129,7 +126,7 @@ const saveDocument = async () => {
 
     isSaving.value = true;
     // 更新保存状态为保存中
-    documentStore.setSaveStatus("saving");
+    documentStore.saveStatus = "saving";
 
     try {
         let content = editor.getJSON();
@@ -142,16 +139,16 @@ const saveDocument = async () => {
         if (response.code !== 200) {
             ElMessage.error("内容保存失败");
             // 保存失败维持未保存状态
-            documentStore.setSaveStatus("unsaved");
+            documentStore.saveStatus = "unsaved";
         } else {
             // 只有当在此期间用户没有做新的修改时，才置为已保存状态
-            if (documentStore.getSaveStatus() === "saving") {
-                documentStore.setSaveStatus("saved");
+            if (documentStore.saveStatus === "saving") {
+                documentStore.saveStatus = "saved";
             }
         }
     } catch (err) {
         ElMessage.error("内容保存失败");
-        documentStore.setSaveStatus("unsaved");
+        documentStore.saveStatus = "unsaved";
     } finally {
         isSaving.value = false;
     }
@@ -160,7 +157,7 @@ const saveDocument = async () => {
 // 手动改变保存状态
 const changeSaveStatus = (status) => {
     if (initializing.value) return;
-    documentStore.setSaveStatus(status);
+    documentStore.saveStatus = status;
 };
 
 // 当标题变化时，同步更新侧边栏与面包屑的标题
@@ -189,7 +186,7 @@ watch(
     documentId,
     async (newId, oldId) => {
         // 1. 如果切换前，旧文档状态为未保存，先同步/异步保存旧文档
-        if (oldId && editor && documentStore.getSaveStatus() === "unsaved") {
+        if (oldId && editor && documentStore.saveStatus === "unsaved") {
             try {
                 const oldContent = editor.getJSON();
                 const oldTitle = title.value;
@@ -231,7 +228,7 @@ watch(
                 editor.setContent(parsed);
             }
             // 切换文档后默认视为已保存
-            documentStore.setSaveStatus("saved");
+            documentStore.saveStatus = "saved";
         }
 
 

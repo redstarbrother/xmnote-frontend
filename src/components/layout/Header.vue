@@ -27,8 +27,8 @@ import { useDomainStore } from '@/stores/domainStore'
 
 const documentStore = useDocumentStore()
 const domainStore = useDomainStore()
-const saveStatus = computed(() => documentStore.getSaveStatus())
-const documentId = computed(() => documentStore.getDocumentId())
+const saveStatus = computed(() => documentStore.saveStatus)
+const documentId = computed(() => documentStore.documentId)
 const documentInfo = computed(() => domainStore.findNode(documentId.value))
 const handleShare = () => {
   ElMessage.info('分享功能未开放')

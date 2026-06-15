@@ -2,7 +2,6 @@ import axios from 'axios';
 import router from '@/router';
 import { ElMessage } from 'element-plus';
 
-console.log("import.meta.env.VITE_API_BASE_URL: " + import.meta.env.VITE_API_BASE_URL)
 // 创建 axios 实例
 const request = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -13,7 +12,6 @@ const request = axios.create({
 });
 
 export const setBaseUrl = (baseUrl) => {
-    console.log("setBaseUrl: " + baseUrl);
     request.defaults.baseURL = baseUrl;
 };
 
@@ -39,7 +37,6 @@ request.interceptors.response.use(
         if (res.code === 200) {
             return res;
         } else {
-            console.log('响应拦截器拦截异常:', res);
             // 处理业务层面的错误
             switch (res.code) {
                 case 400:

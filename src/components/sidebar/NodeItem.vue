@@ -144,7 +144,7 @@ const onLogoSelect = async (newLogo) => {
 
 // 计算属性：减少模板判断
 const isFolder = computed(() => nodeInfo.value.type === NodeType.FOLDER);
-const isSelected = computed(() => nodeInfo.value.id === documentStore.getDocumentId());
+const isSelected = computed(() => nodeInfo.value.id === documentStore.documentId);
 
 // 重命名状态
 const isRenaming = ref(false);
@@ -159,7 +159,7 @@ const clickNode = (event) => {
   if (isFolder.value) {
     expanded.value = !expanded.value;
   } else {
-    documentStore.setDocumentId(nodeInfo.value.id);
+    documentStore.documentId = nodeInfo.value.id;
   }
 };
 

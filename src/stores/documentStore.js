@@ -18,37 +18,11 @@ export const useDocumentStore = defineStore("document", () => {
   const content = ref({});
   const saveStatus = ref("saved");
 
-  function setDocumentId(id) {
-    documentId.value = id || "";
-  }
-
-  function getDocumentId() {
-    return documentId.value;
-  }
-
-  function setContent(c) {
-    content.value = c || {};
-  }
-
-  function getContent() {
-    return content.value;
-  }
-
-  function setSaveStatus(status) {
-    saveStatus.value = status;
-  }
-
-  function getSaveStatus() {
-    console.log("saveStatus.value:", saveStatus.value);
-    
-    return saveStatus.value;
-  }
-
   function reset() {
     documentId.value = "";
     content.value = {};
     saveStatus.value = "saved";
   }
 
-  return { setDocumentId, getDocumentId, setContent, getContent, setSaveStatus, getSaveStatus, reset };
+  return { documentId, content, saveStatus, reset };
 });
