@@ -12,6 +12,31 @@
         <div class="content-editor">
             <div id="xm-editor"> </div>
         </div>
+
+        <!-- 骨架屏遮罩（加载过渡效果） -->
+        <transition name="fade">
+            <div v-if="initializing" class="loading-overlay">
+                <el-skeleton animated style="padding: 10px 20px">
+                    <template #template>
+                        <div style="padding: 0">
+                            <!-- 模拟标题和图标 -->
+                            <div style="display: flex; align-items: center; margin-bottom: 30px;">
+                                <el-skeleton-item variant="rect" style="width: 48px; height: 48px; border-radius: 8px; margin-right: 16px;" />
+                                <el-skeleton-item variant="h1" style="width: 40%; height: 40px;" />
+                            </div>
+                            <!-- 模拟内容 -->
+                            <el-skeleton-item variant="text" style="width: 100%; margin-bottom: 20px; height: 16px" />
+                            <el-skeleton-item variant="text" style="width: 80%; margin-bottom: 20px; height: 16px" />
+                            <el-skeleton-item variant="text" style="width: 90%; margin-bottom: 20px; height: 16px" />
+                            <el-skeleton-item variant="text" style="width: 70%; margin-bottom: 20px; height: 16px" />
+                            <el-skeleton-item variant="text" style="width: 60%; margin-bottom: 20px; height: 16px" />
+                            <el-skeleton-item variant="text" style="width: 85%; margin-bottom: 20px; height: 16px" />
+                            <el-skeleton-item variant="text" style="width: 75%; margin-bottom: 20px; height: 16px" />
+                        </div>
+                    </template>
+                </el-skeleton>
+            </div>
+        </transition>
     </div>
 </template>
 
@@ -53,8 +78,18 @@ const resize = async () => {
 let editor = null;
 let autoSaveTimer = null;
 
-onMounted(() => {
-    // 第一次打开文档时初始化editor
+const initEditor = (initialContent) => {
+    if (editor) {
+        if (typeof editor.destroy === 'function') {
+            editor.destroy();
+        } else if (editor.editor && typeof editor.editor.destroy === 'function') {
+            editor.editor.destroy();
+        }
+        const el = document.querySelector("#xm-editor");
+        if (el) el.innerHTML = "";
+        editor = null;
+    }
+
     editor = new XmEditor({
         el: "#xm-editor",
         config: Presets.NotionLike.configure({
@@ -89,6 +124,13 @@ onMounted(() => {
             },
         }),
     });
+
+    if (initialContent) {
+        editor.setContent(initialContent);
+    }
+};
+
+onMounted(() => {
     resize();
 
     // 合并后的定时器设置：5秒自动保存
@@ -115,7 +157,7 @@ const title = ref("");
 const initializing = ref(false);
 
 const handleEnterTitle = () => {
-    editor.focus();
+    if (editor) editor.focus();
 };
 
 const isSaving = ref(false);
@@ -204,6 +246,13 @@ watch(
 
         if (!newId) return;
         initializing.value = true;
+        
+        // 切换文档时自动滚动到顶部
+        const mainContainer = document.querySelector('.main-container');
+        if (mainContainer) {
+            mainContainer.scrollTop = 0;
+        }
+
         // 从接口获取文档数据
         const response = await getDocument({
             documentId: newId,
@@ -224,9 +273,8 @@ watch(
             } catch (e) {
                 parsed = {};
             }
-            if (editor) {
-                editor.setContent(parsed);
-            }
+            // 重新创建编辑器实例并设置内容
+            initEditor(parsed);
             // 切换文档后默认视为已保存
             documentStore.saveStatus = "saved";
         }
@@ -242,6 +290,31 @@ watch(
 <style lang="scss">
 .content-container {
     width: 70%;
+    position: relative; // 为了让 loading-overlay 绝对定位覆盖
+
+    // 骨架屏遮罩层
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        min-height: 100vh;
+        background-color: #fff;
+        z-index: 10;
+        pointer-events: auto; // 阻止加载时点击底层内容
+    }
+
+    // 渐变过渡动画
+    .fade-enter-active,
+    .fade-leave-active {
+        transition: opacity 0.3s ease;
+    }
+
+    .fade-enter-from,
+    .fade-leave-to {
+        opacity: 0;
+    }
 
     .content-title {
         width: 100%;

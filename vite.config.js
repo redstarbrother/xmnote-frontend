@@ -28,8 +28,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:9527', // 后端服务器地址
-        // target: 'http://xmnote.frp.jhxblog.cn/api', // 后端服务器地址
+        // target: 'http://localhost:9527', // 后端服务器地址
+        target: 'http://xmnote.frp.jhxblog.cn/api', // 后端服务器地址
         changeOrigin: true,
         rewrite: (path) => {
           const newPath = path.replace(/^\/api/, '')
