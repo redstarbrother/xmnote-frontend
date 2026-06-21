@@ -37,6 +37,9 @@
                 </el-skeleton>
             </div>
         </transition>
+
+        <!-- 右侧目录 -->
+        <TocSidebar v-if="!initializing" :editor="editorRef" />
     </div>
 </template>
 
@@ -54,6 +57,7 @@ import {
 import { ElMessage } from "element-plus";
 
 import EmojiPicker from "@/components/common/EmojiPicker.vue";
+import TocSidebar from "@/components/content/TocSidebar.vue";
 
 const documentStore = useDocumentStore();
 const documentId = computed(() => documentStore.documentId);
@@ -76,6 +80,7 @@ const resize = async () => {
 }
 
 let editor = null;
+const editorRef = ref(null);
 let autoSaveTimer = null;
 
 const initEditor = (initialContent) => {
@@ -111,6 +116,9 @@ const initEditor = (initialContent) => {
                             });
                     },
                 }),
+                Extensions.Toc.configure({
+                    mode: "data"
+                })
             ],
             editorOption: {
                 placeholder: "输入 '/' 唤起命令菜单...",
@@ -128,6 +136,9 @@ const initEditor = (initialContent) => {
     if (initialContent) {
         editor.setContent(initialContent);
     }
+
+    // 更新响应式引用供 TocSidebar 使用
+    editorRef.value = editor;
 };
 
 onMounted(() => {
@@ -290,7 +301,7 @@ watch(
 <style lang="scss">
 .content-container {
     width: 70%;
-    position: relative; // 为了让 loading-overlay 绝对定位覆盖
+    position: relative; // 为了让 loading-overlay 和 TOC 绝对定位
 
     // 骨架屏遮罩层
     .loading-overlay {
@@ -344,10 +355,8 @@ watch(
             /* 禁止拖拽 */
             line-height: 1.5;
             box-sizing: border-box;
-            // width: 100%;
             font-size: 40px;
             font-weight: 600;
-            // height: 100%;
             border: none;
             outline: none;
             background-color: #fff;
@@ -362,7 +371,7 @@ watch(
     .content-editor {
         width: 100%;
         flex: 1;
-        overflow: visible; // 修改为visible，防止内部出现滚动条
+        overflow: visible;
     }
 
     .xm-editor-custom {
@@ -372,5 +381,13 @@ watch(
     .content-footer {
         flex-shrink: 0;
     }
+}
+
+// TOC 侧边栏定位：绝对定位到 content-container 右侧外部
+.content-container > .toc-sidebar {
+    position: absolute;
+    top: 0;
+    left: 100%; // 紧贴内容区右侧
+    margin-left: 8px;
 }
 </style>
