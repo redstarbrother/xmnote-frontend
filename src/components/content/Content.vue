@@ -1,42 +1,44 @@
 <template>
-    <div class="content-container">
-        <div class="content-title">
-            <EmojiPicker v-model="logo" @select="changeLogo">
-                <template #reference>
-                    <div class="logo">{{ logo }}</div>
-                </template>
-            </EmojiPicker>
-            <textarea class="content-title-input" ref="titleInputRef" v-model="title" placeholder="请输入标题" maxlength="50"
-                @input="resize" @keyup.enter="handleEnterTitle" rows="1" />
-        </div>
-        <div class="content-editor">
-            <div id="xm-editor"> </div>
-        </div>
-
-        <!-- 骨架屏遮罩（加载过渡效果） -->
-        <transition name="fade">
-            <div v-if="initializing" class="loading-overlay">
-                <el-skeleton animated style="padding: 10px 20px">
-                    <template #template>
-                        <div style="padding: 0">
-                            <!-- 模拟标题和图标 -->
-                            <div style="display: flex; align-items: center; margin-bottom: 30px;">
-                                <el-skeleton-item variant="rect" style="width: 48px; height: 48px; border-radius: 8px; margin-right: 16px;" />
-                                <el-skeleton-item variant="h1" style="width: 40%; height: 40px;" />
-                            </div>
-                            <!-- 模拟内容 -->
-                            <el-skeleton-item variant="text" style="width: 100%; margin-bottom: 20px; height: 16px" />
-                            <el-skeleton-item variant="text" style="width: 80%; margin-bottom: 20px; height: 16px" />
-                            <el-skeleton-item variant="text" style="width: 90%; margin-bottom: 20px; height: 16px" />
-                            <el-skeleton-item variant="text" style="width: 70%; margin-bottom: 20px; height: 16px" />
-                            <el-skeleton-item variant="text" style="width: 60%; margin-bottom: 20px; height: 16px" />
-                            <el-skeleton-item variant="text" style="width: 85%; margin-bottom: 20px; height: 16px" />
-                            <el-skeleton-item variant="text" style="width: 75%; margin-bottom: 20px; height: 16px" />
-                        </div>
+    <div class="content-wrapper">
+        <div class="content-container content-scroll-container">
+            <div class="content-title">
+                <EmojiPicker v-model="logo" @select="changeLogo">
+                    <template #reference>
+                        <div class="logo">{{ logo }}</div>
                     </template>
-                </el-skeleton>
+                </EmojiPicker>
+                <textarea class="content-title-input" ref="titleInputRef" v-model="title" placeholder="请输入标题" maxlength="50"
+                    @input="resize" @keyup.enter="handleEnterTitle" rows="1" />
             </div>
-        </transition>
+            <div class="content-editor">
+                <div id="xm-editor"> </div>
+            </div>
+
+            <!-- 骨架屏遮罩（加载过渡效果） -->
+            <transition name="fade">
+                <div v-if="initializing" class="loading-overlay">
+                    <el-skeleton animated style="padding: 10px 20px">
+                        <template #template>
+                            <div style="padding: 0">
+                                <!-- 模拟标题和图标 -->
+                                <div style="display: flex; align-items: center; margin-bottom: 30px;">
+                                    <el-skeleton-item variant="rect" style="width: 48px; height: 48px; border-radius: 8px; margin-right: 16px;" />
+                                    <el-skeleton-item variant="h1" style="width: 40%; height: 40px;" />
+                                </div>
+                                <!-- 模拟内容 -->
+                                <el-skeleton-item variant="text" style="width: 100%; margin-bottom: 20px; height: 16px" />
+                                <el-skeleton-item variant="text" style="width: 80%; margin-bottom: 20px; height: 16px" />
+                                <el-skeleton-item variant="text" style="width: 90%; margin-bottom: 20px; height: 16px" />
+                                <el-skeleton-item variant="text" style="width: 70%; margin-bottom: 20px; height: 16px" />
+                                <el-skeleton-item variant="text" style="width: 60%; margin-bottom: 20px; height: 16px" />
+                                <el-skeleton-item variant="text" style="width: 85%; margin-bottom: 20px; height: 16px" />
+                                <el-skeleton-item variant="text" style="width: 75%; margin-bottom: 20px; height: 16px" />
+                            </div>
+                        </template>
+                    </el-skeleton>
+                </div>
+            </transition>
+        </div>
 
         <!-- 右侧目录 -->
         <TocSidebar v-if="!initializing" :editor="editorRef" />
@@ -117,7 +119,8 @@ const initEditor = (initialContent) => {
                     },
                 }),
                 Extensions.Toc.configure({
-                    mode: "data"
+                    mode: "data",
+                    scrollContainer: ".content-scroll-container"
                 })
             ],
             editorOption: {
@@ -259,9 +262,9 @@ watch(
         initializing.value = true;
         
         // 切换文档时自动滚动到顶部
-        const mainContainer = document.querySelector('.main-container');
-        if (mainContainer) {
-            mainContainer.scrollTop = 0;
+        const contentContainer = document.querySelector('.content-scroll-container');
+        if (contentContainer) {
+            contentContainer.scrollTop = 0;
         }
 
         // 从接口获取文档数据
@@ -299,9 +302,32 @@ watch(
 </script>
 
 <style lang="scss">
-.content-container {
+.content-wrapper {
     width: 70%;
-    position: relative; // 为了让 loading-overlay 和 TOC 绝对定位
+    height: 100%;
+    position: relative;
+}
+
+.content-container {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    position: relative; // 为了让 loading-overlay 绝对定位
+
+    &::-webkit-scrollbar {
+        width: 8px !important;
+        background-color: transparent !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: #D3D1CB !important;
+        border-radius: 4px !important;
+        border: none !important;
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: transparent !important;
+    }
 
     // 骨架屏遮罩层
     .loading-overlay {
@@ -335,6 +361,7 @@ watch(
         align-items: flex-start;
         background-color: #fff;
         padding: 10px 20px;
+        box-sizing: border-box;
 
         .logo {
             padding: 0;
@@ -383,8 +410,8 @@ watch(
     }
 }
 
-// TOC 侧边栏定位：绝对定位到 content-container 右侧外部
-.content-container > .toc-sidebar {
+// TOC 侧边栏定位：绝对定位到 content-wrapper 右侧外部
+.content-wrapper > .toc-sidebar {
     position: absolute;
     top: 0;
     left: 100%; // 紧贴内容区右侧
