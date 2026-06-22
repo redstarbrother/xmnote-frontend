@@ -15,8 +15,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1(vue@3.5.13)
       '@putanut/xm-editor':
-        specifier: ^0.1.4
-        version: 0.1.4(@tiptap/extension-code-block@3.27.1(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)(@tiptap/vue-3@3.27.1(@floating-ui/dom@1.7.6)(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)(vue@3.5.13))(emojibase@17.0.0)(highlight.js@11.11.1)(prosemirror-model@1.25.9)(prosemirror-state@1.4.4)(prosemirror-view@1.41.9)(vue@3.5.13)
+        specifier: ^0.1.6
+        version: 0.1.6(@tiptap/extension-code-block@3.27.1(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)(@tiptap/vue-3@3.27.1(@floating-ui/dom@1.7.6)(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)(vue@3.5.13))(emojibase@17.0.0)(highlight.js@11.11.1)(prosemirror-model@1.25.9)(prosemirror-state@1.4.4)(prosemirror-view@1.41.9)(vue@3.5.13)
       '@vueuse/core':
         specifier: ^13.4.0
         version: 13.4.0(vue@3.5.13)
@@ -495,8 +495,8 @@ packages:
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
-  '@putanut/xm-editor@0.1.4':
-    resolution: {integrity: sha512-/xIMHQoiPzS7ZXARY1xSN1I0VgzamTVNm2LFSxgvHoR380IZfqXTlzFzV4Urj9fvZ+ffIVjl86ncxC119wMLMA==}
+  '@putanut/xm-editor@0.1.6':
+    resolution: {integrity: sha512-1oLQcOwCGg8Cfo8Q+Ril02c4ndqGhWbXTK43z3Mh4BhC2FpR2gTY2hF02HeXC78juyVrmAmURdFmyWwNRqrSEw==}
 
   '@rollup/pluginutils@5.1.4':
     resolution: {integrity: sha512-USm05zrsFxYLPdWWq+K3STlWiT/3ELn3RcV5hJMghpeAIhxfsUIg6mt12CBJBInWMV4VneoV7SfGv8xIwo2qNQ==}
@@ -2042,7 +2042,7 @@ snapshots:
 
   '@popperjs/core@2.11.8': {}
 
-  '@putanut/xm-editor@0.1.4(@tiptap/extension-code-block@3.27.1(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)(@tiptap/vue-3@3.27.1(@floating-ui/dom@1.7.6)(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)(vue@3.5.13))(emojibase@17.0.0)(highlight.js@11.11.1)(prosemirror-model@1.25.9)(prosemirror-state@1.4.4)(prosemirror-view@1.41.9)(vue@3.5.13)':
+  '@putanut/xm-editor@0.1.6(@tiptap/extension-code-block@3.27.1(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)(@tiptap/vue-3@3.27.1(@floating-ui/dom@1.7.6)(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)(vue@3.5.13))(emojibase@17.0.0)(highlight.js@11.11.1)(prosemirror-model@1.25.9)(prosemirror-state@1.4.4)(prosemirror-view@1.41.9)(vue@3.5.13)':
     dependencies:
       '@floating-ui/dom': 1.7.6
       '@floating-ui/vue': 1.1.11(vue@3.5.13)

@@ -175,15 +175,15 @@ function toggleHeading(id) {
     collapsedIds.value = new Set(collapsedIds.value)
 }
 
-// 从 editor storage 同步 TOC 数据
+// 从 editor 同步 TOC 数据
 function syncFromStorage() {
-    if (!props.editor || !props.editor.instance) return
+    if (!props.editor) return
 
-    const storage = props.editor.instance.storage?.toc
-    if (!storage) return
+    const toc = props.editor.getToc()
+    if (!toc) return
 
-    const items = storage.tocItems || []
-    const activeId = storage.activeId
+    const items = toc.getTocInfo() || []
+    const activeId = toc.getActiveId()
 
     tocItems.value = items.map((item, idx) => {
         // 判断当前标题是否含有子章节（即后一个标题的层级比它低/数字更大）
@@ -205,13 +205,11 @@ function syncFromStorage() {
 // 点击目录项
 function handleClick(item) {
     if (!props.editor) return
-    props.editor.scrollToHeading(item.id, { smooth: true, focus: false })
+    const toc = props.editor.getToc()
+    toc.scrollToHeading(item.id, { smooth: true, focus: false })
 
     // 通知 Extension 层更新 activeId
-    const storage = props.editor.instance?.storage?.toc
-    if (storage?.highlighter) {
-        storage.highlighter.setActiveId(item.id)
-    }
+    toc.setActiveId(item.id)
 
     // 立即同步本地状态
     nextTick(() => syncFromStorage())
@@ -234,55 +232,49 @@ function scrollActiveItemIntoView() {
     })
 }
 
+let updateHandler = null
 let pollerTimer = null
 
 // 监听 editor prop 变化
 watch(() => props.editor, (newEditor) => {
+    // 清理上一次的订阅与定时器
+    if (updateHandler && props.editor) {
+        props.editor.getToc().offUpdate(updateHandler)
+        updateHandler = null
+    }
     if (pollerTimer) {
         clearInterval(pollerTimer)
         pollerTimer = null
     }
 
-    if (newEditor && newEditor.instance) {
+    if (newEditor) {
         syncFromStorage()
 
-        // 监听 transaction 以实时同步
-        const handler = ({ transaction }) => {
-            if (transaction.docChanged) {
-                syncFromStorage()
-            } else {
-                syncFromStorage()
-                scrollActiveItemIntoView()
-            }
+        // 监听 TOC 数据与 activeId 的变更回调
+        updateHandler = () => {
+            syncFromStorage()
+            scrollActiveItemIntoView()
         }
-        newEditor.instance.on('transaction', handler)
+        newEditor.getToc().onUpdate(updateHandler)
 
-        // 定时器兜底：检测 storage.activeId 变更
+        // 定时器兜底：检测 activeId 变更并同步滚动位置
         pollerTimer = setInterval(() => {
-            const storage = newEditor.instance?.storage?.toc
-            if (!storage) return
             const currentActiveId = tocItems.value.find(i => i.isActive)?.id
-            if (storage.activeId !== currentActiveId) {
+            const activeId = newEditor.getToc().getActiveId()
+            if (activeId !== currentActiveId) {
                 syncFromStorage()
                 scrollActiveItemIntoView()
             }
         }, 150)
-
-        // 清理函数
-        onUnmounted(() => {
-            newEditor.instance.off('transaction', handler)
-            if (pollerTimer) {
-                clearInterval(pollerTimer)
-                pollerTimer = null
-            }
-        })
     }
 }, { immediate: true })
 
 onUnmounted(() => {
+    if (props.editor && updateHandler) {
+        props.editor.getToc().offUpdate(updateHandler)
+    }
     if (pollerTimer) {
         clearInterval(pollerTimer)
-        pollerTimer = null
     }
 })
 </script>
