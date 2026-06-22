@@ -102,7 +102,7 @@ onMounted(async () => {
   .el-aside {
     height: 100vh; // 固定侧边栏为视口高度
     overflow: hidden; // 禁止外层滚动条出现
-    max-width: 30vw;
+    max-width: 50vw;
   }
 
   .el-main {

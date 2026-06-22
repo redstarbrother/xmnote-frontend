@@ -28,6 +28,9 @@
                             <button class="verification-btn">获取验证码</button>
                         </div>
                     </div>
+                    <div class="form-group remember-me-group">
+                        <el-checkbox v-model="loginForm.rememberMe">7天内免登录</el-checkbox>
+                    </div>
                     <div class="form-group">
                         <el-button type="primary" @click="handleLogin">注册/登录</el-button>
                     </div>
@@ -66,6 +69,9 @@
                         <label for="password">密码</label>
                         <input v-model="loginForm.credential" type="password" id="password" name="password"
                             placeholder="请输入密码" @keyup.enter="handleLogin" required>
+                    </div>
+                    <div class="form-group remember-me-group">
+                        <el-checkbox v-model="loginForm.rememberMe">7天内免登录</el-checkbox>
                     </div>
                     <div class="form-group">
                         <el-button type="primary" @click="handleLogin">登录</el-button>
@@ -107,7 +113,8 @@ const loginForm = ref({
     principal: "",
     credential: "",
     serverAddr: "",
-    serverType: computed(() => isPrivateServer.value ? 'private' : 'public')
+    serverType: computed(() => isPrivateServer.value ? 'private' : 'public'),
+    rememberMe: false
 })
 const isPrivateServer = ref(false)
 const activeTab = ref('phone')
@@ -293,6 +300,11 @@ const switchTab = (tab) => {
                     // font-weight: 500;
                 }
             }
+        }
+
+        .remember-me-group {
+            margin-top: -10px;
+            margin-bottom: -10px;
         }
 
         .form-group {

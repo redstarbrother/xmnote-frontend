@@ -1,14 +1,14 @@
 <template>
     <div class="content-wrapper">
-        <div class="content-container content-scroll-container">
+        <div class="content-container content-scroll-container" :class="{ 'is-scrolling': isScrolling }" @scroll="handleScroll">
             <div class="content-title">
-                <EmojiPicker v-model="logo" @select="changeLogo">
+                <EmojiPicker v-model="logo">
                     <template #reference>
                         <div class="logo">{{ logo }}</div>
                     </template>
                 </EmojiPicker>
                 <textarea class="content-title-input" ref="titleInputRef" v-model="title" placeholder="请输入标题" maxlength="50"
-                    @input="resize" @keyup.enter="handleEnterTitle" rows="1" />
+                    @input="resize" @keydown.enter.prevent="handleEnterTitle" rows="1" />
             </div>
             <div class="content-editor">
                 <div id="xm-editor"> </div>
@@ -157,10 +157,27 @@ onMounted(() => {
     }, 5000);
 })
 
+const isScrolling = ref(false);
+let scrollTimeout = null;
+
+const handleScroll = () => {
+    isScrolling.value = true;
+    if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+    }
+    scrollTimeout = setTimeout(() => {
+        isScrolling.value = false;
+    }, 1000);
+};
+
 onUnmounted(() => {
     if (autoSaveTimer) {
         clearInterval(autoSaveTimer);
         autoSaveTimer = null;
+    }
+    if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = null;
     }
 });
 
@@ -302,6 +319,12 @@ watch(
 </script>
 
 <style lang="scss">
+@property --scrollbar-thumb-color {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(211, 209, 203, 0);
+}
+
 .content-wrapper {
     width: 70%;
     height: 100%;
@@ -313,6 +336,12 @@ watch(
     height: 100%;
     overflow-y: auto;
     position: relative; // 为了让 loading-overlay 绝对定位
+    transition: --scrollbar-thumb-color 0.3s ease;
+    --scrollbar-thumb-color: rgba(211, 209, 203, 0);
+
+    &.is-scrolling {
+        --scrollbar-thumb-color: rgba(211, 209, 203, 1);
+    }
 
     &::-webkit-scrollbar {
         width: 8px !important;
@@ -320,7 +349,7 @@ watch(
     }
 
     &::-webkit-scrollbar-thumb {
-        background-color: #D3D1CB !important;
+        background-color: var(--scrollbar-thumb-color) !important;
         border-radius: 4px !important;
         border: none !important;
     }
@@ -360,7 +389,7 @@ watch(
         display: flex;
         align-items: flex-start;
         background-color: #fff;
-        padding: 10px 64px;
+        padding: 10px 64px 10px 64px;
         box-sizing: border-box;
 
         .logo {
@@ -388,6 +417,8 @@ watch(
             outline: none;
             background-color: #fff;
             overflow: hidden;
+            padding: 0;
+            margin: 0;
 
             &::placeholder {
                 color: #bcbcb8;
@@ -405,8 +436,14 @@ watch(
         border: 0;
 
         .ProseMirror {
+            padding-top: 8px !important;
+            padding-bottom: 8px !important;
             padding-left: 64px !important;
             padding-right: 64px !important;
+
+            > *:first-child {
+                margin-top: 0 !important;
+            }
         }
     }
 

@@ -11,9 +11,17 @@
             </span>
           </template>
         </EmojiPicker>
-        <span v-if="!isRenaming" class="truncate" :class="{ file: isFolder }">
-          {{ nodeInfo.title }}
-        </span>
+        <el-tooltip
+          v-if="!isRenaming"
+          :content="nodeInfo.title"
+          placement="top"
+          :disabled="!isOverflow"
+          :enterable="false"
+        >
+          <span class="truncate" :class="{ file: isFolder }" @mouseenter="checkOverflow">
+            {{ nodeInfo.title }}
+          </span>
+        </el-tooltip>
         <input v-else ref="inputRef" v-model="editTitle" class="rename-input" @keydown.enter="confirmRename"
           @blur="confirmRename" @keydown.esc="cancelRename" />
       </div>
@@ -145,6 +153,15 @@ const onLogoSelect = async (newLogo) => {
 // 计算属性：减少模板判断
 const isFolder = computed(() => nodeInfo.value.type === NodeType.FOLDER);
 const isSelected = computed(() => nodeInfo.value.id === documentStore.documentId);
+
+// 文本溢出显示完整名称逻辑
+const isOverflow = ref(false);
+const checkOverflow = (event) => {
+  const el = event.currentTarget;
+  if (el) {
+    isOverflow.value = el.scrollWidth > el.clientWidth;
+  }
+};
 
 // 重命名状态
 const isRenaming = ref(false);

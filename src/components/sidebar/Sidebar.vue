@@ -1,6 +1,6 @@
 <template>
-  <div class="sidebar-container" :style="{ width: containerWidth }">
-    <div class="sidebar-wrapper" ref="wrapperRef">
+  <div class="sidebar-container" :class="{ 'is-resizing': isResizing }" :style="{ width: containerWidth }">
+    <div class="sidebar-wrapper">
       <div class="logo-area" @click="handleLogoClick">
         <img src="/logo.png" alt="logo" class="logo" />
         <div class="highlight">西木笔记</div>
@@ -34,11 +34,13 @@
         <UserArea />
       </div>
     </div>
+    <!-- 拖拽热区 -->
+    <div class="resize-handle" @mousedown="startResize"></div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed } from "vue";
 import { NodeType } from "@/enums/NodeType";
 import NoteItem from "@/components/sidebar/NodeItem.vue";
 import UserArea from "@/components/sidebar/UserArea.vue";
@@ -54,10 +56,9 @@ const documentStore = useDocumentStore();
 
 const domainTree = computed(() => domainStore.getDomainTree());
 
-// 侧边栏宽度动画逻辑
-const wrapperRef = ref(null);
-const containerWidth = ref("240px");
-let resizeObserver = null;
+// 侧边栏拖拽调整宽度逻辑
+const containerWidth = ref(localStorage.getItem("sidebarWidth") || "240px");
+const isResizing = ref(false);
 
 // 处理logo点击事件
 const handleLogoClick = () => {
@@ -65,45 +66,40 @@ const handleLogoClick = () => {
   documentStore.reset();
 };
 
-const updateWidth = () => {
-  if (wrapperRef.value) {
-    // 如果当前存在重命名输入框，不更新侧边栏宽度，锁定当前宽度防止无限放大或抖动
-    if (wrapperRef.value.querySelector(".rename-input")) {
-      return;
-    }
-    const contentWidth = wrapperRef.value.scrollWidth;
-    const maxWidth = window.innerWidth * 0.3; // 30vw
+const startResize = (event) => {
+  event.preventDefault();
+  isResizing.value = true;
+  const startX = event.clientX;
+  const startWidth = parseInt(containerWidth.value, 10) || 240;
+
+  const doDrag = (e) => {
+    if (!isResizing.value) return;
+    const currentX = e.clientX;
+    const deltaX = currentX - startX;
+    let newWidth = startWidth + deltaX;
+
     const minWidth = 240;
-    let newWidth = Math.max(minWidth, contentWidth);
-    
-    // 限制最大宽度，但如果内容本身就很宽，可能需要截断或者允许滚动
-    // 这里我们按照要求限制在 30vw
-    if (newWidth > maxWidth) {
+    const maxWidth = window.innerWidth * 0.5; // 限制最大宽度为 50vw
+
+    if (newWidth < minWidth) {
+      newWidth = minWidth;
+    } else if (newWidth > maxWidth) {
       newWidth = maxWidth;
     }
-    
+
     containerWidth.value = `${newWidth}px`;
-  }
+  };
+
+  const stopDrag = () => {
+    isResizing.value = false;
+    window.removeEventListener("mousemove", doDrag);
+    window.removeEventListener("mouseup", stopDrag);
+    localStorage.setItem("sidebarWidth", containerWidth.value);
+  };
+
+  window.addEventListener("mousemove", doDrag);
+  window.addEventListener("mouseup", stopDrag);
 };
-
-onMounted(() => {
-  if (wrapperRef.value) {
-    resizeObserver = new ResizeObserver(() => {
-      // 使用 requestAnimationFrame 避免 loop limit exceeded 错误
-      requestAnimationFrame(updateWidth);
-    });
-    resizeObserver.observe(wrapperRef.value, { box: 'border-box' });
-    // 同时监听 document-area 的子元素变化可能更准确，但 wrapper 整体变化也行
-  }
-  window.addEventListener('resize', updateWidth);
-});
-
-onUnmounted(() => {
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-  }
-  window.removeEventListener('resize', updateWidth);
-});
 
 // 新增文件夹（域根）
 const addFolder = async (domainId) => {
@@ -161,6 +157,28 @@ const addFolderNode = () => {
   background-color: #ffffff;
   border-right: 1px solid rgb(233 236 239 / 1);
   transition: width 0.3s ease-in-out; // 添加过渡效果
+  position: relative; // 相对定位，供拖拽热区绝对定位使用
+
+  &.is-resizing {
+    transition: none !important;
+  }
+
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 10;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+
+    &:hover,
+    &:active {
+      background-color: rgba(95, 95, 91, 0.2); // 使用柔和的灰色反馈
+    }
+  }
 
   // ::after, ::before {
   //   box-sizing: border-box;
@@ -171,7 +189,7 @@ const addFolderNode = () => {
 
   .sidebar-wrapper {
     min-width: 240px;
-    width: fit-content; // 让内容撑开宽度
+    width: 100%; // 宽度占满，不再用 fit-content
     height: 100%;
     display: flex;
     flex-direction: column;

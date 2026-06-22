@@ -297,6 +297,8 @@ onUnmounted(() => {
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     width: 200px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .toc-sidebar-collapsed {
@@ -333,6 +335,8 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    flex: 1;
+    min-height: 0;
 }
 
 // 面板头部

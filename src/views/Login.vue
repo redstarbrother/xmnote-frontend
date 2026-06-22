@@ -44,6 +44,7 @@ const handleLogin = (loginForm) => {
     principal: loginForm.principal,
     credential: loginForm.credential,
     loginType: loginForm.loginType.toUpperCase(),
+    rememberMe: loginForm.rememberMe,
   };
   login(loginReq).then((res) => {
     ElMessage.success("登录成功！");
