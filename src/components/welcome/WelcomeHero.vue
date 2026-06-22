@@ -33,7 +33,9 @@ import { Plus, Collection } from '@element-plus/icons-vue';
 .brand {
   display: flex;
   align-items: center;
-  justify-self: center;
+  justify-content: center;
+  width: fit-content;
+  margin: 0 auto;
   flex-wrap: nowrap;
   gap: 10px;
   transition: transform 0.3s ease;

@@ -17,7 +17,7 @@
             <!-- 骨架屏遮罩（加载过渡效果） -->
             <transition name="fade">
                 <div v-if="initializing" class="loading-overlay">
-                    <el-skeleton animated style="padding: 10px 20px">
+                    <el-skeleton animated style="padding: 10px 64px">
                         <template #template>
                             <div style="padding: 0">
                                 <!-- 模拟标题和图标 -->
@@ -360,7 +360,7 @@ watch(
         display: flex;
         align-items: flex-start;
         background-color: #fff;
-        padding: 10px 20px;
+        padding: 10px 64px;
         box-sizing: border-box;
 
         .logo {
@@ -403,6 +403,11 @@ watch(
 
     .xm-editor-custom {
         border: 0;
+
+        .ProseMirror {
+            padding-left: 64px !important;
+            padding-right: 64px !important;
+        }
     }
 
     .content-footer {
