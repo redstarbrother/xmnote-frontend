@@ -41,12 +41,11 @@ export const getDocument = (params) => {
     });
 };
 
-// 上传图片
-export const uploadImage = (data) => {
+// 获取上传图片的直传链接
+export const getUploadUrl = (params) => {
     return request({
-        url: '/doc/uploadImg',
-        headers: { 'Content-Type': 'multipart/form-data' },
-        method: 'post',
-        data: data
+        url: '/doc/getUploadUrl',
+        method: 'get',
+        params: params
     });
 };

@@ -68,8 +68,9 @@
                         <div v-if="item.type === 'avatar'" class="avatar-uploader">
                           <el-avatar :size="64" :src="settings[item.section][item.key]" />
                           <div class="avatar-actions">
-                            <el-button type="primary" plain size="small">上传头像</el-button>
+                            <el-button type="primary" plain size="small" @click="handleAvatarClick">上传头像</el-button>
                             <span class="avatar-tip">支持 JPG, PNG 格式</span>
+                            <input type="file" ref="avatarInput" style="display: none" accept="image/jpeg,image/png" @change="handleAvatarChange" />
                           </div>
                         </div>
 
@@ -160,6 +161,44 @@
                           v-model="settings[item.section][item.key]"
                         />
 
+                        <!-- 可点击文本 Clickable Text -->
+                        <div
+                          v-else-if="item.type === 'clickable-text'"
+                          class="clickable-text-control"
+                          @click="handleAction(item)"
+                        >
+                          <span class="clickable-value">{{ settings[item.section][item.key] }}</span>
+                          <el-icon class="edit-icon"><Edit /></el-icon>
+                        </div>
+
+                        <!-- 账号绑定项 Bind Item -->
+                        <div v-else-if="item.type === 'bind-item'" class="bind-item-control">
+                          <div class="bind-info">
+                            <span v-if="item.bindType === 'phone' || item.bindType === 'email'" class="bind-value" :class="{ 'unbound': !settings[item.section][item.key] }">
+                              {{ settings[item.section][item.key] || '未绑定' }}
+                            </span>
+                            <span v-else-if="item.bindType === 'wechat'" class="bind-value" :class="{ 'unbound': !settings[item.section][item.key] }">
+                              {{ settings[item.section][item.key] ? '已绑定' : '未绑定' }}
+                            </span>
+                            <span v-else-if="item.bindType === 'password'" class="bind-value" :class="{ 'unbound': !settings[item.section][item.key] }">
+                              {{ settings[item.section][item.key] ? '已设置' : '未设置' }}
+                            </span>
+                          </div>
+                          <div class="bind-action">
+                            <el-button link type="primary" @click="handleBindAction(item)">
+                              <template v-if="item.bindType === 'password'">
+                                {{ settings[item.section][item.key] ? '修改' : '去设置' }}
+                              </template>
+                              <template v-else-if="item.bindType === 'wechat'">
+                                {{ settings[item.section][item.key] ? '解绑' : '去绑定' }}
+                              </template>
+                              <template v-else>
+                                {{ settings[item.section][item.key] ? '更换' : '去绑定' }}
+                              </template>
+                            </el-button>
+                          </div>
+                        </div>
+
                         <!-- 输入框 Input -->
                         <el-input
                           v-else-if="item.type === 'input'"
@@ -169,7 +208,11 @@
                           :placeholder="item.placeholder"
                           :readonly="item.props?.readonly"
                           :disabled="item.props?.disabled"
-                        />
+                        >
+                          <template v-if="item.action" #append>
+                            <el-button @click="handleAction(item)">{{ item.actionText || '修改' }}</el-button>
+                          </template>
+                        </el-input>
                          
                          <!-- 按钮 Button -->
                         <el-button
@@ -202,6 +245,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useUserStore } from "@/stores/userStore";
+import { uploadAvatar, updateUser } from "@/api/user";
 import { 
   User, 
   Monitor, 
@@ -223,12 +268,43 @@ import { useDebounceFn } from '@vueuse/core';
 const dialogVisible = ref(false);
 const activeTab = ref('account');
 
+const userStore = useUserStore();
+const avatarInput = ref(null);
+
+const handleAvatarClick = () => {
+    if (avatarInput.value && avatarInput.value.length > 0) {
+        avatarInput.value[0].click();
+    }
+};
+
+const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+        const res = await uploadAvatar(file);
+        if (res.code === 200) {
+            settings.user.avatar = res.data;
+            userStore.updateAvatar(res.data);
+            ElMessage.success('头像上传成功');
+        } else {
+            ElMessage.error(res.message || '头像上传失败');
+        }
+    } catch (err) {
+        ElMessage.error('头像上传失败');
+    } finally {
+        e.target.value = ''; // clear input
+    }
+};
+
 // 基础配置数据结构
 const settings = reactive({
   user: {
     nickname: "西木",
     avatar: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
-    email: "user@example.com",
+    phone: "138****1234",
+    email: null,
+    wechatBound: true,
+    hasPassword: true,
     devices: [
         { id: 1, name: 'Chrome / Windows 10', time: '2023-10-27 10:30', current: true },
         { id: 2, name: 'Safari / iPhone 13', time: '2023-10-26 15:20', current: false },
@@ -290,9 +366,16 @@ const schema = {
       title: '个人资料',
       items: [
         { label: '头像', section: 'user', key: 'avatar', type: 'avatar', colSpan: 2 },
-        { label: '昵称', section: 'user', key: 'nickname', type: 'input', colSpan: 1 },
-        { label: '绑定邮箱', section: 'user', key: 'email', type: 'input', props: { readonly: true, disabled: true }, colSpan: 1 },
-        { label: '登录密码', type: 'button', buttonText: '修改密码', action: 'changePassword', colSpan: 1, props: { plain: true } }
+        { label: '昵称', section: 'user', key: 'nickname', type: 'clickable-text', action: 'changeNickname', colSpan: 1 }
+      ]
+    },
+    {
+      title: '账号绑定与安全',
+      items: [
+        { label: '手机号码', section: 'user', key: 'phone', type: 'bind-item', bindType: 'phone', colSpan: 1 },
+        { label: '邮箱地址', section: 'user', key: 'email', type: 'bind-item', bindType: 'email', colSpan: 1 },
+        { label: '微信账号', section: 'user', key: 'wechatBound', type: 'bind-item', bindType: 'wechat', colSpan: 1 },
+        { label: '登录密码', section: 'user', key: 'hasPassword', type: 'bind-item', bindType: 'password', colSpan: 1 }
       ]
     },
     {
@@ -515,7 +598,7 @@ const currentGroups = computed(() => {
 });
 
 // 自动保存逻辑
-const save = () => {
+const save = async () => {
   try {
     localStorage.setItem('xmnote-settings', JSON.stringify(settings));
     applySettings();
@@ -579,13 +662,102 @@ const loadSavedSettings = () => {
       if(parsed.data) Object.assign(settings.data, parsed.data);
       if(parsed.advanced) Object.assign(settings.advanced, parsed.advanced);
     }
+    
+    // 使用 userStore 的真实数据覆盖默认或缓存的用户信息
+    if (userStore.username) {
+        settings.user.nickname = userStore.username;
+    }
+    if (userStore.avatarUrl) {
+        settings.user.avatar = userStore.avatarUrl;
+    }
+    if (userStore.userInfo?.email) {
+        settings.user.email = userStore.userInfo.email;
+    }
+    // Mock 手机号和微信绑定情况，实际中应从 userStore 或用户信息接口获取
+    // settings.user.phone = userStore.userInfo?.phone || '138****1234';
+    // settings.user.wechatBound = !!userStore.userInfo?.wechatId;
+    
   } catch (e) {
     console.error('Load settings failed', e);
   }
 };
 
+const handleBindAction = (item) => {
+    // 检查兜底逻辑
+    const boundMethodsCount = [
+        settings.user.phone,
+        settings.user.email,
+        settings.user.wechatBound
+    ].filter(Boolean).length;
+
+    const isUnbinding = settings[item.section][item.key] && (item.bindType === 'wechat' || item.bindType === 'phone' || item.bindType === 'email');
+    const actionText = settings[item.section][item.key] ? (item.bindType === 'wechat' ? '解绑' : '更换') : '绑定';
+
+    if (isUnbinding && actionText === '解绑' && boundMethodsCount <= 1) {
+        ElMessage.warning('至少需要保留一种登录方式');
+        return;
+    }
+
+    if (item.bindType === 'password') {
+        if (settings[item.section][item.key]) {
+            ElMessageBox.prompt('请输入新密码', '修改密码', {
+              inputType: 'password',
+              inputPattern: /.{6,}/,
+              inputErrorMessage: '密码长度至少为6位'
+            }).then(() => {
+              ElMessage.success('密码修改成功');
+            }).catch(() => {});
+        } else {
+            ElMessageBox.prompt('请设置初始密码', '设置密码', {
+              inputType: 'password',
+              inputPattern: /.{6,}/,
+              inputErrorMessage: '密码长度至少为6位'
+            }).then(() => {
+              settings.user.hasPassword = true;
+              ElMessage.success('密码设置成功');
+            }).catch(() => {});
+        }
+        return;
+    }
+
+    // 对于其他绑定项
+    ElMessageBox.confirm(`确定要${actionText} ${item.label} 吗？\n（此功能前端占位展示，后续对接真实接口）`, `${actionText}`, {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+    }).then(() => {
+        // Mock toggle
+        if (item.bindType === 'wechat') {
+            settings.user.wechatBound = !settings.user.wechatBound;
+            ElMessage.success(settings.user.wechatBound ? '微信绑定成功' : '微信已解绑');
+        } else {
+            ElMessage.info('此操作需配合验证码，已记录意图');
+        }
+    }).catch(() => {});
+};
+
 const handleAction = (item) => {
-  if (item.action === 'deleteAccount') {
+  if (item.action === 'changeNickname') {
+      ElMessageBox.prompt('请输入新昵称', '修改昵称', {
+          inputValue: settings.user.nickname,
+          inputPattern: /.+/,
+          inputErrorMessage: '昵称不能为空'
+      }).then(async ({ value }) => {
+          if (value === settings.user.nickname) return;
+          try {
+              const res = await updateUser({ username: value });
+              if (res && res.code === 200) {
+                  settings.user.nickname = value;
+                  userStore.updateUsername(value);
+                  ElMessage.success('昵称修改成功');
+              } else {
+                  ElMessage.error(res?.message || '修改失败');
+              }
+          } catch (e) {
+              ElMessage.error('修改失败');
+          }
+      }).catch(() => {});
+  } else if (item.action === 'deleteAccount') {
     ElMessageBox.confirm('注销后您的所有数据将被永久删除，无法恢复。确定要继续吗？', '危险操作确认', { 
         type: 'warning',
         confirmButtonText: '确认注销',
@@ -1069,5 +1241,57 @@ $bg-gray: #F5F7FA;
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+.clickable-text-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  height: 32px;
+  box-sizing: border-box;
+  background-color: var(--el-fill-color-light, #f5f7fa);
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--el-text-color-regular, #606266);
+}
+
+.clickable-text-control:hover {
+  background-color: var(--el-fill-color, #f0f2f5);
+  border-color: var(--el-border-color-hover, #c0c4cc);
+  color: var(--el-color-primary, #409eff);
+}
+
+.clickable-text-control .clickable-value {
+  font-size: 14px;
+}
+
+.clickable-text-control .edit-icon {
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.clickable-text-control:hover .edit-icon {
+  opacity: 1;
+}
+
+.bind-item-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  height: 32px;
+  background-color: var(--el-fill-color-light, #f5f7fa);
+  border-radius: 4px;
+}
+
+.bind-item-control .bind-value {
+  font-size: 14px;
+  color: var(--el-text-color-regular, #606266);
+}
+
+.bind-item-control .bind-value.unbound {
+  color: var(--el-text-color-placeholder, #a8abb2);
 }
 </style>

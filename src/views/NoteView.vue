@@ -33,6 +33,7 @@ import Footer from '@/components/layout/Footer.vue';
 import ContentWelcome from "@/components/welcome/ContentWelcome.vue";
 import { useDomainStore } from '@/stores/domainStore';
 import { getDomainTree } from '@/api/folder';
+import { getUserInfoById } from '@/api/user';
 import { getUserIdFromToken, getUserNameFromToken, getUserRoleFromToken } from '@/utils/jwtUtil';
 import { useDocumentStore } from "@/stores/documentStore";
 import { useUserStore } from "@/stores/userStore";
@@ -56,6 +57,19 @@ onMounted(async () => {
     username: getUserNameFromToken() || "已登录用户",
     role: getUserRoleFromToken() || ""
   });
+
+  // Fetch complete user info from backend (including avatar)
+  try {
+    const userRes = await getUserInfoById(userId);
+    if (userRes && userRes.code === 200 && userRes.data) {
+      userStore.setUserInfo({
+        username: userRes.data.username || userStore.username,
+        avatarUrl: userRes.data.avatar || userStore.avatarUrl
+      });
+    }
+  } catch (e) {
+    console.error("Failed to fetch complete user info", e);
+  }
 
   const response2 = await getDomainTree();
   domainStore.init(response2.data);

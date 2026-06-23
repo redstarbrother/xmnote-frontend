@@ -54,7 +54,7 @@ import { useDomainStore } from "@/stores/domainStore";
 import {
     getDocument,
     updateDocument,
-    uploadImage,
+    getUploadUrl,
 } from "@/api/doc";
 import { ElMessage } from "element-plus";
 
@@ -102,20 +102,41 @@ const initEditor = (initialContent) => {
         config: Presets.NotionLike.configure({
             extensions: [
                 Extensions.Image.configure({
-                    uploadHandler: (file) => {
-                        const formData = new FormData();
-                        formData.append("type", file.type);
-                        formData.append("file", file);
-                        return uploadImage(formData)
-                            .then((res) => {
-                                return {
-                                    url: res.data.url,
-                                };
-                            })
-                            .catch((err) => {
-                                ElMessage.error(err.message);
-                                return Promise.reject(err);
+                    uploadHandler: async (file) => {
+                        try {
+                            // 1. 获取直传链接
+                            const urlRes = await getUploadUrl({
+                                filename: file.name || "image.jpg",
+                                contentType: file.type || "image/jpeg"
                             });
+                            
+                            if (urlRes.code !== 200) {
+                                throw new Error(urlRes.message || "获取上传链接失败");
+                            }
+                            
+                            const { uploadUrl, accessUrl } = urlRes.data;
+                            
+                            // 2. 直接将文件流 PUT 到 OSS
+                            const uploadRes = await fetch(uploadUrl, {
+                                method: 'PUT',
+                                body: file,
+                                headers: {
+                                    'Content-Type': file.type || "image/jpeg"
+                                }
+                            });
+                            
+                            if (!uploadRes.ok) {
+                                throw new Error("图片直传失败，状态码：" + uploadRes.status);
+                            }
+                            
+                            // 3. 返回公开访问的链接给编辑器
+                            return {
+                                url: accessUrl,
+                            };
+                        } catch (err) {
+                            ElMessage.error(err.message || "上传失败");
+                            return Promise.reject(err);
+                        }
                     },
                 }),
                 Extensions.Toc.configure({
